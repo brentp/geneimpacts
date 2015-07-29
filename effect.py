@@ -9,6 +9,8 @@ class Effect(object):
         raise NotImplemented
 
     def __le__(self, other):
+        if self.pseudogene and not other.pseudogene:
+            return other.severity
         return self.severity <= other.severity
 
     def __eq__(self, other):
@@ -59,6 +61,10 @@ class Effect(object):
 
     @property
     def biotype(self):
+        raise NotImplemented
+
+    @property
+    def is_pseudogene(self): #bool
         raise NotImplemented
 
 class SnpEff(Effect):
