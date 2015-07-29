@@ -1,6 +1,25 @@
 from functools import total_ordering
 import itertools as it
 
+EXONIC_IMPACTS = set(["stop_gained",
+                      "stop_lost",
+                      "frameshift_variant",
+                      "initiator_codon_variant",
+                      "inframe_deletion",
+                      "inframe_insertion",
+                      "missense_variant",
+                      "incomplete_terminal_codon_variant",
+                      "stop_retained_variant",
+                      "synonymous_variant",
+                      "coding_sequence_variant",
+                      "5_prime_UTR_variant",
+                      "3_prime_UTR_variant",
+                      "transcript_ablation",
+                      "transcript_amplification",
+                      "feature_elongation",
+                      "feature_truncation"])
+
+
 @total_ordering
 class Effect(object):
 
@@ -37,7 +56,7 @@ class Effect(object):
         raise NotImplementedError
 
     @property
-    def exon(self):
+    def exonic(self):
         raise NotImplementedError
 
     @property
@@ -107,7 +126,15 @@ class SnpEff(Effect):
 
     @property
     def coding(self):
-        return self.effects['Transcript_BioType'] == 'protein_coding'
+        # TODO: check start_gained and utr
+        return self.exonic and not "utr" in self.consequence and self.consequence != "start_gained"
+
+    @property
+    def exonic(self):
+        csqs = self.consequence
+        if isinstance(csqs, basestring):
+            csqs = [csqs]
+        return any(csq in EXONIC_IMPACTS for csq in csqs) and self.effects['Transcript_BioType'] == 'protein_coding'
 
     # not defined in ANN field.
     aa_change = None
