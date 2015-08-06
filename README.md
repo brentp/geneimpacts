@@ -17,3 +17,14 @@ Given 2 effects, `a` and `b`: `a < b == True` iff the *severity* of `b` is great
 
 We will have a classmethod: `Effect.top_severity([eff1, ... effn]) that will return the single highest serverity if that exists or
 a list of the ties for highest
+
+Rules for severity:
+===================
+
+Given 2 annotations, *a* and *b*
+*a* is more severe than *b* if:
+
+1. *b* is a pseudogene and *a* is not
+2. *a* is coding and *b* is not
+3. *a* has higher severity than *b*
+4. polyphen/sift?

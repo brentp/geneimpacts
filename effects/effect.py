@@ -36,16 +36,23 @@ class Effect(object):
             return False
         elif other.coding and not self.coding:
             return True
-        return self.severity <= other.severity
+
+        if self.severity != other.severity:
+            return self.severity <= other.severity
+
+        raise NotImplementedError
+        # TODO: look at polyphen/sift?
 
     def __eq__(self, other):
-        raise NotImplementedError
+        return self.effects == other.effects
 
     def __str__(self):
+        # TODO: tab-delimited?
         raise NotImplementedError
 
     def __repr__(self):
-        raise NotImplementedError
+        return "%s(%s-%s)" % (self.__class__.__name__, self.gene,
+                self.consequence)
 
     @property
     def gene(self):
@@ -175,6 +182,8 @@ class VEP(Effect):
 
     @property
     def consequence(self):
+        if '&' in self.effects['Consequence']:
+            return self.effects['Consequence'].split('&')
         return self.effects['Consequence']
 
     @property
