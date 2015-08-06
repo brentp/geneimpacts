@@ -169,8 +169,15 @@ class Effect(object):
         if self.severity != other.severity:
             return self.severity <= other.severity
 
-        raise NotImplementedError
-        # TODO: look at polyphen/sift?
+        if self.sift_value < other.sift_value:
+            return True
+
+        if self.polyphen_value < other.polyphen_value:
+            return True
+
+        return True
+        #raise NotImplementedError
+        # TODO: look at transcript length?
 
     def __eq__(self, other):
         return self.effects == other.effects
