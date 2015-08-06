@@ -148,6 +148,7 @@ IMPACT_SEVERITY.update(IMPACT_SEVERITY_SNPEFF)
 IMPACT_SEVERITY.update(IMPACT_SEVERITY_CUSTOM)
 IMPACT_SEVERITY.update(IMPACT_SEVERITY_VEP)
 
+
 @total_ordering
 class Effect(object):
 
@@ -217,7 +218,7 @@ class Effect(object):
 
     @property
     def impact_severity(self):
-        return ['xxx', 'LOW', 'MEDIUM', 'HIGH'][self.severity]
+        return ['xxx', 'LOW', 'MED', 'HIGH'][self.severity]
 
     @property
     def consequence(self):
@@ -229,7 +230,7 @@ class Effect(object):
 
     @property
     def is_pseudogene(self): #bool
-        raise NotImplementedError
+        return 'pseudogene' in self.biotype
 
 class SnpEff(Effect):
 
@@ -272,10 +273,6 @@ class SnpEff(Effect):
         return self.effects['Allele']
 
     @property
-    def is_pseudogene(self):
-        return 'pseudogene' in self.effects['Transcript_BioType']
-
-    @property
     def coding(self):
         # TODO: check start_gained and utr
         return self.exonic and not "utr" in self.consequence and not "start_gained" in self.consequence
@@ -291,8 +288,11 @@ class SnpEff(Effect):
     # not defined in ANN field.
     aa_change = None
     sift = None
+    sift_value = None
+    sift_class = None
     polyphen = None
-
+    polyphen_value = None
+    polyphen_class = None
 
 class VEP(Effect):
     keys = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE".split("|")
@@ -336,13 +336,9 @@ class VEP(Effect):
         return self.effects.get('ALLELE')
 
     @property
-    def is_pseudogene(self):
-        return self.effects['BIOTYPE'] == 'processed_pseudogene'
-
-    @property
     def coding(self):
         # what about start/stop_gained?
-        return self.exonic and self.effect_name[1:] != "_prime_UTR_variant"
+        return self.exonic and any(csq[1:] != "_prime_UTR_variant" for csq in self.consequences)
 
     def exonic(self):
         return any(csq in EXONIC_IMPACTS for csq in self.consequences) and self.effects['BIOTYPE'] == 'protein_coding'
@@ -352,8 +348,36 @@ class VEP(Effect):
         return self.effects['SIFT']
 
     @property
+    def sift_value(self):
+        try:
+            return float(self.effects['SIFT'].split("(")[1][:-1])
+        except IndexError:
+            return None
+
+    @property
+    def sift_class(self):
+        try:
+            return self.effects['SIFT'].split("(")[0]
+        except IndexError:
+            return None
+
+    @property
     def polyphen(self):
         return self.effects['PolyPhen']
+
+    @property
+    def polyphen_value(self):
+        try:
+            return float(self.effects['PolyPhen'].split('(')[1][:-1])
+        except IndexError:
+            return None
+
+    @property
+    def polyphen_class(self):
+        try:
+            return self.effects['PolyPhen'].split('(')[0]
+        except:
+            return None
 
     @property
     def aa_change(self):

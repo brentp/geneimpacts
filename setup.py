@@ -10,8 +10,8 @@ def get_version():
         module = ast.parse(init_file.read())
 
     version = (ast.literal_eval(node.value) for node in ast.walk(module)
-             if isinstance(node, ast.Assign)
-             and node.targets[0].id == "__version__")
+               if isinstance(node, ast.Assign)
+               and node.targets[0].id == "__version__")
     try:
         return next(version)
     except StopIteration:
@@ -20,7 +20,7 @@ def get_version():
 setup(version=get_version(),
       name='effects',
       description="normalize effects from variant annotation tools (snpEff, VEP)",
-      packages=['effects'],
+      packages=['effects', 'effects.tests'],
       long_description=open('README.md').read(),
       author="Brent Pedersen",
       author_email="bpederse@gmail.com",
@@ -29,7 +29,8 @@ setup(version=get_version(),
       include_package_data=True,
       tests_require='nose',
       classifiers=[
-              'Development Status :: 4 - Beta',
-              'Intended Audience :: Science/Research',
-              'License :: OSI Approved :: MIT License',
-              'Topic :: Scientific/Engineering :: Bio-Informatics'])
+    'Development Status :: 4 - Beta',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: MIT License',
+    'Topic :: Scientific/Engineering :: Bio-Informatics'
+  ])
