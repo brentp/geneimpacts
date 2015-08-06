@@ -146,14 +146,9 @@ class SnpEff(Effect):
 
     # not defined in ANN field.
     aa_change = None
+    sift = None
+    polyphen = None
 
-    @property
-    def sift(self):
-        return None
-
-    @property
-    def polyphen(self):
-        return None
 
 class VEP(Effect):
     keys = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE".split("|")
@@ -209,6 +204,10 @@ class VEP(Effect):
     @property
     def polyphen(self):
         return self.effects['PolyPhen']
+
+    @property
+    def aa_change(self):
+        return self.effects['Amino_acids']
 
 if __name__ == "__main__":
 
