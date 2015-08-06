@@ -111,10 +111,18 @@ class SnpEff(Effect):
         return self.effects['Feature_ID'] or None
 
     @property
+    def exon(self):
+        return self.effects['Rank']
+
+    @property
     def consequence(self):
         if '&' in self.effects['Annotation']:
             return self.effects['Annotation'].split('&')
         return self.effects['Annotation']
+
+    @property
+    def biotype(self):
+        return self.effects['Transcript_BioType']
 
     @property
     def alt(self):
@@ -138,6 +146,69 @@ class SnpEff(Effect):
 
     # not defined in ANN field.
     aa_change = None
+
+    @property
+    def sift(self):
+        return None
+
+    @property
+    def polyphen(self):
+        return None
+
+class VEP(Effect):
+    keys = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE".split("|")
+    def __init__(self, effect_string, keys=None):
+        assert not "," in effect_string
+        assert not "=" in effect_string
+        self.effect_string = effect_string
+        if keys is not None: self.keys = keys
+
+        self.effect_string = effect_string
+        self.effects = dict(it.izip(self.keys, (x.strip() for x in effect_string.split("|"))))
+
+    @property
+    def gene(self):
+        return self.effects['SYMBOL'] or self.effects['Gene']
+
+    @property
+    def transcript(self):
+        return self.effects['Feature']
+
+    @property
+    def exon(self):
+        return self.effects['EXON']
+
+    @property
+    def consequence(self):
+        return self.effects['Consequence']
+
+    @property
+    def biotype(self):
+        return self.effects['BIOTYPE']
+
+    @property
+    def alt(self):
+        return self.effects.get('ALLELE')
+
+    @property
+    def is_pseudogene(self):
+        return self.effects['BIOTYPE'] == 'processed_pseudogene'
+
+    @property
+    def coding(self):
+        # what about start/stop_gained?
+        return self.exonic and self.effect_name[1:] != "_prime_UTR_variant"
+
+    def exonic(self):
+        return self.consequence in EXONIC_IMPACTS and self.effects['BIOTYPE'] == 'protein_coding'
+
+    @property
+    def sift(self):
+        return self.effects['SIFT']
+
+    @property
+    def polyphen(self):
+        return self.effects['PolyPhen']
 
 if __name__ == "__main__":
 
