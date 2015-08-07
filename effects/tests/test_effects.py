@@ -1,7 +1,7 @@
 import sys
 import os
 import gzip
-from effects import SnpEff, VEP
+from effects import SnpEff, VEP, Effect
 
 
 HERE = os.path.dirname(__file__)
@@ -59,3 +59,37 @@ def test_snpeffs():
             assert csq.coding in (True, False)
             assert csq.polyphen_value is None
 
+EFFECTS = [VEP("upstream_gene_variant|||ENSG00000223972|DDX11L1|ENST00000456328|||||processed_transcript"),
+           VEP("downstream_gene_variant|||ENSG00000227232|WASH7P|ENST00000488147|||||unprocessed_pseudogene"),
+           VEP("non_coding_exon_variant&nc_transcript_variant|||ENSG00000223972|DDX11L1|ENST00000456328|2/3||||processed_transcript"),
+           VEP("non_coding_exon_variant&nc_transcript_variant|||ENSG00000223972|DDX11L1|ENST00000456328|2/3||||processed_transcript"),
+           VEP("splice_region_variant&non_coding_exon_variant&nc_transcript_variant|||ENSG00000223972|DDX11L1|ENST00000456328|2/3||||processed_transcript"),
+           VEP("splice_region_variant&non_coding_exon_variant&nc_transcript_variant|||ENSG00000223972|DDX11L1|ENST00000456328|2/3||||processed_transcript"),
+           VEP("splice_region_variant&non_coding_exon_variant&nc_transcript_variant|||ENSG00000223972|DDX11L1|ENST00000456328|2/3||||processed_transcript"),
+           VEP("intron_variant&nc_transcript_variant|||ENSG00000223972|DDX11L1|ENST00000450305|||||transcribed_unprocessed_pseudogene"),
+           VEP("intron_variant&nc_transcript_variant|||ENSG00000223972|DDX11L1|ENST00000450305|||||transcribed_unprocessed_pseudogene"),
+           VEP('missense_variant|tTt/tGt|F/C|ENSG00000186092|OR4F5|ENST00000335137|1/1|possibly_damaging(0.568)|deleterious(0)|113/305|protein_coding'),
+           VEP("non_coding_exon_variant&nc_transcript_variant&feature_elongation|||ENSG00000223972|DDX11L1|ENST00000456328|3/3||||processed_transcript"),
+           ]
+
+
+def test_order():
+
+    effects = sorted(EFFECTS)
+    assert effects[-1].impact_severity == "MED"
+    assert effects[0].impact_severity == "LOW"
+
+
+def test_highest():
+    effects = sorted(EFFECTS)
+
+    top = Effect.top_severity(effects)
+    assert isinstance(top, Effect)
+    assert top.impact_severity == "MED"
+
+
+    effects.append(effects[-1])
+
+    top = Effect.top_severity(effects)
+    assert isinstance(top, list)
+    assert top[0].impact_severity == "MED"

@@ -157,9 +157,9 @@ class Effect(object):
         raise NotImplementedError
 
     def __le__(self, other):
-        if self.pseudogene and not other.pseudogene:
+        if self.is_pseudogene and not other.is_pseudogene:
             return True
-        elif other.pseudogene and not self.pseudogene:
+        elif other.is_pseudogene and not self.is_pseudogene:
             return False
         if self.coding and not other.coding:
             return False
@@ -179,16 +179,29 @@ class Effect(object):
         #raise NotImplementedError
         # TODO: look at transcript length?
 
+    @classmethod
+    def top_severity(self, effects):
+        if len(effects) == 1:
+            return effects[0]
+        effects = sorted(effects)
+        if effects[-1] > effects[-2]:
+            return effects[-1]
+        ret = [effects[-1], effects[-2]]
+        for i in range(-3, -(len(effects) - 1), -1):
+            if effects[-1] > effects[i]: break
+            ret.append(effects[i])
+        return ret
+
     def __eq__(self, other):
-        return self.effects == other.effects
+        if not isinstance(other, Effect): return False
+        return self.effect_string == other.effect_string
 
     def __str__(self):
-        # TODO: tab-delimited?
-        raise NotImplementedError
+        return repr(self)
 
     def __repr__(self):
-        return "%s(%s-%s)" % (self.__class__.__name__, self.gene,
-                self.consequence)
+        return "%s(%s-%s, %s)" % (self.__class__.__name__, self.gene,
+                self.consequence, self.impact_severity)
 
     @property
     def gene(self):
