@@ -180,7 +180,12 @@ class Effect(object):
         # TODO: look at transcript length?
 
     @classmethod
-    def top_severity(self, effects):
+    def top_severity(cls, effects):
+        for i, e in enumerate(effects):
+            if isinstance(e, basestring):
+
+                effects[i] = cls(e)
+
         if len(effects) == 1:
             return effects[0]
         effects = sorted(effects)
@@ -217,10 +222,13 @@ class Effect(object):
 
     @property
     def coding(self):
+        raise NotImplementedError
         return True
 
     @property
     def lof(self):
+        return self.impact_severity == "HIGH" and self.biotype == "protein_coding"
+        raise NotImplementedError
         return True
 
     @property
