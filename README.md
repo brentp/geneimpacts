@@ -9,12 +9,11 @@ general utility.
 Design
 ======
 
-We will have an effect base-class and then a sub-class for each tool (one
-for snpeff and one for VEP).
+There is an effect base-class and then a sub-class for `snpEff` and one for `VEP`
 
-`Effect` objects will be orderable (via \_\_le\_\_ ) and should have an equality test.  Then we can use [functools.total_ordering](https://docs.python.org/2/library/functools.html#functools.total_ordering) to provide the other comparison operators.
+`Effect` objects are orderable (via \_\_le\_\_ ) and should have an \_\_eq\_\_ method so that we can use [functools.total_ordering](https://docs.python.org/2/library/functools.html#functools.total_ordering) to provide the other comparison operators.
 
-Given 2 effects, `a` and `b`: `a < b == True` iff the *severity* of `b` is greater than `a`.
+Given 2 effects objects, `a` and `b`: `a < b == True` iff the *severity* of `b` is greater than `a`.
 
 We will have a classmethod: `Effect.top_severity([eff1, ... effn]) that will return the single highest serverity if that exists or
 a list of the ties for highest
@@ -28,7 +27,8 @@ Given 2 annotations, *a* and *b*
 1. *b* is a pseudogene and *a* is not
 2. *a* is coding and *b* is not
 3. *a* has higher severity than *b* ( see below)
-4. polyphen/sift?
+4. polyphen, then sift
+5. ??? transcript length? (we dont have access to this).
 
 severity
 --------
