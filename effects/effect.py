@@ -161,6 +161,7 @@ class Effect(object):
             return True
         elif other.is_pseudogene and not self.is_pseudogene:
             return False
+
         if self.coding and not other.coding:
             return False
         elif other.coding and not self.coding:
@@ -262,13 +263,15 @@ class Effect(object):
 
 class SnpEff(Effect):
 
+    __slots__ = ('effects', 'effect_string')
+
     keys = [x.strip() for x in 'Allele | Annotation | Annotation_Impact | Gene_Name | Gene_ID | Feature_Type | Feature_ID | Transcript_BioType | Rank | HGVS.c | HGVS.p | cDNA.pos / cDNA.length | CDS.pos / CDS.length | AA.pos / AA.length | Distance | ERRORS / WARNINGS / INFO'.split("|")]
 
     def __init__(self, effect_string):
         assert not "," in effect_string
-        assert not "=" in effect_string
+        assert not "=" == effect_string[3]
         self.effect_string = effect_string
-        self.effects = dict(it.izip(self.keys, (x.strip() for x in effect_string.split("|"))))
+        self.effects = dict(it.izip(self.keys, (x.strip() for x in effect_string.split("|", len(self.keys)))))
 
     @property
     def gene(self):
