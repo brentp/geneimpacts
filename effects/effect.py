@@ -93,6 +93,7 @@ IMPACT_SEVERITY_VEP = dict([
     ('stop_gained', 'HIGH'),
     ('frameshift_variant', 'HIGH'),
     ('stop_lost', 'HIGH'),
+    ('start_lost', 'HIGH'),
     ('transcript_amplification', 'HIGH'),
 
     ('inframe_insertion', 'MED'),
@@ -103,7 +104,6 @@ IMPACT_SEVERITY_VEP = dict([
 
     ('splice_region_variant', 'LOW'),
     ('incomplete_terminal_codon_variant', 'LOW'),
-    ('start_lost', 'LOW'),
     ('stop_retained_variant', 'LOW'),
     ('synonymous_variant', 'LOW'),
     ('coding_sequence_variant', 'LOW'),
