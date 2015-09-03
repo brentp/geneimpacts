@@ -34,7 +34,6 @@ IMPACT_SEVERITY = dict([
     ('upstream_gene_variant', 'LOW'),
     ('downstream_gene_variant', 'LOW'),
     ('intergenic_variant', 'LOW'),
-    ('transcript_ablation', 'LOW'),
     ('transcript_amplification', 'LOW'),
     ('feature_elongation', 'LOW'),
     ('feature_truncation', 'LOW'),
@@ -51,6 +50,7 @@ IMPACT_SEVERITY = dict([
     ('TFBS_ablation', 'MED'),
     ('TFBS_amplification', 'MED'),
 
+    ('transcript_ablation', 'HIGH'),
     ('splice_acceptor_variant', 'HIGH'),
     ('splice_donor_variant', 'HIGH'),
     ('stop_gained', 'HIGH'),
@@ -67,6 +67,12 @@ IMPACT_SEVERITY_SNPEFF = dict([
     ('exon_loss_variant', 'HIGH'),
     ('rare_amino_acid_variant', 'HIGH'),
     ('start_lost', 'HIGH'),
+
+    ('3_prime_UTR_truncation+exon_loss', 'MED'),
+    ('5_prime_UTR_truncation+exon_loss_variant', 'MED'),
+    ('disruptive_inframe_deletion', 'MED'),
+    ('disruptive_inframe_insertion', 'MED')
+
     ('5_prime_UTR_premature_start_codon_gain_variant', 'LOW'),
     ('conserved_intergenic_variant', 'LOW'),
     ('conserved_intron_variant', 'LOW'),
@@ -79,10 +85,6 @@ IMPACT_SEVERITY_SNPEFF = dict([
     ('non_coding_transcript_variant', 'LOW'),
     ('start_retained', 'LOW'),
     ('transcript_variant', 'LOW'),
-    ('3_prime_UTR_truncation+exon_loss', 'MED'),
-    ('5_prime_UTR_truncation+exon_loss_variant', 'MED'),
-    ('disruptive_inframe_deletion', 'MED'),
-    ('disruptive_inframe_insertion', 'MED')
 ])
 
 # http://uswest.ensembl.org/info/genome/variation/predicted_data.html#consequences
@@ -170,14 +172,15 @@ class Effect(object):
         if self.severity != other.severity:
             return self.severity <= other.severity
 
+        # sift higher == more damaing
         if self.sift_value < other.sift_value:
             return True
 
-        if self.polyphen_value < other.polyphen_value:
+        # polyphen, lower == more damaging
+        if self.polyphen_value > other.polyphen_value:
             return True
 
         return True
-        #raise NotImplementedError
         # TODO: look at transcript length?
 
     @classmethod
