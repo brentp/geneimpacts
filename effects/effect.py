@@ -103,6 +103,7 @@ IMPACT_SEVERITY_VEP = dict([
     ('missense_variant', 'MED'),
     ('protein_altering_variant', 'MED'),
     ('regulatory_region_ablation', 'MED'),
+    ('TFBS_ablation', 'MED'),
 
     ('splice_region_variant', 'LOW'),
     ('incomplete_terminal_codon_variant', 'LOW'),
@@ -118,7 +119,6 @@ IMPACT_SEVERITY_VEP = dict([
     ('non_coding_transcript_variant', 'LOW'),
     ('upstream_gene_variant', 'LOW'),
     ('downstream_gene_variant', 'LOW'),
-    ('TFBS_ablation', 'MODERATE'),
     ('TFBS_amplification', 'LOW'),
     ('TF_binding_site_variant', 'LOW'),
     ('regulatory_region_amplification', 'LOW'),
@@ -200,6 +200,9 @@ class Effect(object):
             if effects[-1] > effects[i]: break
             ret.append(effects[i])
         return ret
+
+    def __getitem__(self, key):
+        return self.effects[key]
 
     def __eq__(self, other):
         if not isinstance(other, Effect): return False
