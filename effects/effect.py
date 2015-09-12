@@ -71,7 +71,7 @@ IMPACT_SEVERITY_SNPEFF = dict([
     ('3_prime_UTR_truncation+exon_loss', 'MED'),
     ('5_prime_UTR_truncation+exon_loss_variant', 'MED'),
     ('disruptive_inframe_deletion', 'MED'),
-    ('disruptive_inframe_insertion', 'MED')
+    ('disruptive_inframe_insertion', 'MED'),
 
     ('5_prime_UTR_premature_start_codon_gain_variant', 'LOW'),
     ('conserved_intergenic_variant', 'LOW'),
