@@ -377,6 +377,7 @@ class VEP(Effect):
         # what about start/stop_gained?
         return self.exonic and any(csq[1:] != "_prime_UTR_variant" for csq in self.consequences)
 
+    @property
     def exonic(self):
         return any(csq in EXONIC_IMPACTS for csq in self.consequences) and self.effects['BIOTYPE'] == 'protein_coding'
 
