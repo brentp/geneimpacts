@@ -24,7 +24,8 @@ old_snpeff_effect_so = {'CDS': 'coding_sequence_variant',
                'SPLICE_SITE_ACCEPTOR': 'splice_acceptor_variant',
                'SPLICE_SITE_DONOR': 'splice_donor_variant',
                'SPLICE_SITE_REGION': 'splice_region_variant',
-               'START_GAINED': '5_prime_UTR_premature_start_codon_gain_variant',
+               #'START_GAINED': '5_prime_UTR_premature_start_codon_gain_variant',
+               'START_GAINED': '5_prime_UTR_premature_start_codon_variant',
                'START_LOST': 'start_lost',
                'STOP_GAINED': 'stop_gained',
                'STOP_LOST': 'stop_lost',
@@ -106,23 +107,6 @@ old_snpeff_lookup = {'CDS': 'LOW',
  'UTR_5_DELETED': 'MED',
  'UTR_5_PRIME': 'LOW'}
 
-EXONIC_IMPACTS = set(["stop_gained",
-                      "stop_lost",
-                      "frameshift_variant",
-                      "initiator_codon_variant",
-                      "inframe_deletion",
-                      "inframe_insertion",
-                      "missense_variant",
-                      "incomplete_terminal_codon_variant",
-                      "stop_retained_variant",
-                      "synonymous_variant",
-                      "coding_sequence_variant",
-                      "5_prime_UTR_variant",
-                      "3_prime_UTR_variant",
-                      "transcript_ablation",
-                      "transcript_amplification",
-                      "feature_elongation",
-                      "feature_truncation"])
 
 
 # http://uswest.ensembl.org/info/genome/variation/predicted_data.html#consequences
@@ -160,7 +144,7 @@ IMPACT_SEVERITY = [
     ('mature_miRNA_variant', 'LOW'), # VEP
     ('synonymous_variant', 'LOW'), # VEP
     ('coding_sequence_variant', 'LOW'), # VEP
-    ('5_prime_UTR_premature_start_codon_gain_variant', 'LOW'), # snpEff
+    ('5_prime_UTR_premature_start_codon_variant', 'LOW'), # snpEff
     ('5_prime_UTR_variant', 'LOW'), # VEP
     ('3_prime_UTR_variant', 'LOW'), # VEP
 
@@ -201,7 +185,7 @@ IMPACT_SEVERITY_ORDER = dict((x[0], i) for i, x in enumerate(IMPACT_SEVERITY[::-
 IMPACT_SEVERITY = dict(IMPACT_SEVERITY)
 
 
-so_exonic_impacts = frozenset(["stop_gained",
+EXONIC_IMPACTS = frozenset(["stop_gained",
                      "stop_lost",
                      "frameshift_variant",
                      "initiator_codon_variant",
@@ -210,6 +194,7 @@ so_exonic_impacts = frozenset(["stop_gained",
                      "missense_variant",
                      "incomplete_terminal_codon_variant",
                      "stop_retained_variant",
+                     "5_prime_UTR_premature_start_codon_variant",
                      "synonymous_variant",
                      "coding_sequence_variant",
                      "5_prime_UTR_variant",
@@ -229,7 +214,7 @@ class Effect(object):
 
     @property
     def is_exonic(self):
-        return any(c in so_exonic_impacts for c in self.consequences)
+        return any(c in EXONIC_IMPACTS for c in self.consequences)
 
     @property
     def top_consequence(self):
@@ -584,18 +569,14 @@ class OldSnpEff(SnpEff):
             return max(lookup[old_snpeff_lookup[csq]] for csq in self.consequences)
         except KeyError:
             #in between
-            return max(lookup[IMPACT_SEVERITY[csq]] for csq in self.consequences)
+            sevs = [IMPACT_SEVERITY[csq] for csq in self.consequences]
+            return max(lookup[s] for s in sevs)
 
     @property
     def transcript(self):
         if 'Transcript' in self.effects:
             return self.effects['Transcript'] or None
         return self.effects['Transcript_ID']
-
-
-    @property
-    def is_exonic(self, _s=old_snpeff_exonic):
-        return any(c in _s for c in self.consequences)
 
     @property
     def is_coding(self):
