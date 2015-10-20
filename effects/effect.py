@@ -65,11 +65,12 @@ IMPACT_SEVERITY = dict([
 IMPACT_SEVERITY_SNPEFF = dict([
     ('chromosome_number_variation', 'HIGH'),
     ('exon_loss_variant', 'HIGH'),
+    ('exon_loss', 'HIGH'),
     ('rare_amino_acid_variant', 'HIGH'),
     ('start_lost', 'HIGH'),
 
-    ('3_prime_UTR_truncation+exon_loss', 'MED'),
-    ('5_prime_UTR_truncation+exon_loss_variant', 'MED'),
+    ('3_prime_UTR_truncation', 'MED'),
+    ('5_prime_UTR_truncation', 'MED'),
     ('disruptive_inframe_deletion', 'MED'),
     ('disruptive_inframe_insertion', 'MED'),
 
@@ -299,7 +300,7 @@ class SnpEff(Effect):
 
     @property
     def consequences(self):
-        return self.effects['Annotation'].split('&')
+        return list(it.chain.from_iterable(x.split("+") for x in self.effects['Annotation'].split('&')))
 
     @property
     def biotype(self):
@@ -362,7 +363,7 @@ class VEP(Effect):
 
     @property
     def consequences(self):
-        return self.effects['Consequence'].split('&')
+        return list(it.chain.from_iterable(x.split("+") for x in self.effects['Consequence'].split('&')))
 
     @property
     def biotype(self):

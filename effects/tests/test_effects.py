@@ -27,6 +27,7 @@ def test_vep():
     assert ann.gene == 'OR4F5'
     assert ann.transcript == 'ENST00000335137'
     assert ann.aa_change == "F/C", ann.aa_change
+    assert ann.consequences == ['missense_variant']
     assert ann.coding
     assert ann.biotype == "protein_coding"
     assert ann.severity == 2
