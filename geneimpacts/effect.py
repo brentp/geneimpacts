@@ -125,8 +125,6 @@ EXONIC_IMPACTS = set(["stop_gained",
                       "feature_truncation"])
 
 
-# I decided these myself.
-
 # http://uswest.ensembl.org/info/genome/variation/predicted_data.html#consequences
 IMPACT_SEVERITY = [
     ('chromosome_number_variation', 'HIGH'), # snpEff
