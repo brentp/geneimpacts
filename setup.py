@@ -6,7 +6,7 @@ def get_version():
     """Get the version info from the mpld3 package without importing it"""
     import ast
 
-    with open(os.path.join("effects", "__init__.py"), "r") as init_file:
+    with open(os.path.join("geneimpacts", "__init__.py"), "r") as init_file:
         module = ast.parse(init_file.read())
 
     version = (ast.literal_eval(node.value) for node in ast.walk(module)
@@ -18,9 +18,9 @@ def get_version():
         raise ValueError("version could not be located")
 
 setup(version=get_version(),
-      name='effects',
+      name='geneimpacts',
       description="normalize effects from variant annotation tools (snpEff, VEP)",
-      packages=['effects', 'effects.tests'],
+      packages=['geneimpacts', 'geneimpacts.tests'],
       long_description=open('README.md').read(),
       author="Brent Pedersen",
       author_email="bpederse@gmail.com",

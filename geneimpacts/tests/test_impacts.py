@@ -1,7 +1,7 @@
 import sys
 import os
 import gzip
-from effects import SnpEff, VEP, Effect
+from geneimpacts import SnpEff, VEP, Effect
 
 
 HERE = os.path.dirname(__file__)
