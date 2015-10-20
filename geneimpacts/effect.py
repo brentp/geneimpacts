@@ -257,12 +257,47 @@ IMPACT_SEVERITY.update(IMPACT_SEVERITY_CUSTOM)
 IMPACT_SEVERITY.update(IMPACT_SEVERITY_VEP)
 
 
+so_exonic_impacts = frozenset(["stop_gained",
+                     "stop_lost",
+                     "frameshift_variant",
+                     "initiator_codon_variant",
+                     "inframe_deletion",
+                     "inframe_insertion",
+                     "missense_variant",
+                     "incomplete_terminal_codon_variant",
+                     "stop_retained_variant",
+                     "synonymous_variant",
+                     "coding_sequence_variant",
+                     "5_prime_UTR_variant",
+                     "3_prime_UTR_variant",
+                     "transcript_ablation",
+                     "transcript_amplification",
+                     "feature_elongation",
+                     "feature_truncation"])
+
+
 @total_ordering
 class Effect(object):
 
     def __init__(self, effect_dict):
         # or maybe arg should be a dict for Effect()
         raise NotImplementedError
+
+    @property
+    def is_exonic(self):
+        return any(c in so_exonic_impacts for c in self.consequences)
+
+    @property
+    def top_consequence(self):
+        return self.consequences[0]
+
+    @property
+    def is_coding(self):
+        return self.is_exonic and any("_prime_UTR_variant" not in c for c in self.consequences)
+
+    @property
+    def is_lof(self):
+        return self.impact_severity == "HIGH" and self.biotype == "protein_coding"
 
     def __le__(self, other):
         if self.is_pseudogene and not other.is_pseudogene:
@@ -323,7 +358,7 @@ class Effect(object):
 
     @property
     def effect_severity(self):
-        return self.severity
+        return self.impact_severity
 
     @property
     def gene(self):
@@ -463,6 +498,17 @@ class VEP(Effect):
         return self.effects['SYMBOL'] or self.effects['Gene']
 
     @property
+    def codon_change(self):
+        return self.effects['Codons']
+
+    @property
+    def aa_length(self):
+        try:
+            return int(self.effects['Protein_position'])
+        except ValueError:
+            return self.effects['Protein_position']
+
+    @property
     def transcript(self):
         return self.effects['Feature']
 
@@ -474,6 +520,10 @@ class VEP(Effect):
     def consequence(self):
         if '&' in self.effects['Consequence']:
             return self.effects['Consequence'].split('&')
+        return self.effects['Consequence']
+
+    @property
+    def so(self):
         return self.effects['Consequence']
 
     @property
@@ -533,6 +583,12 @@ class VEP(Effect):
         except:
             return None
 
+    polyphen_pred = polyphen_class
+    polyphen_score = polyphen_value
+    sift_pred = sift_class
+    sift_score = sift_value
+
+
     @property
     def aa_change(self):
         return self.effects['Amino_acids']
@@ -583,7 +639,7 @@ class OldSnpEff(SnpEff):
 
     @property
     def is_lof(self):
-        return self.severity == 3 and self.biotype == "protein_coding"
+        return self.impact_severity == "HIGH" and self.biotype == "protein_coding"
 
     @property
     def exon(self):
