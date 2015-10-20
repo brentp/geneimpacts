@@ -606,7 +606,10 @@ class OldSnpEff(SnpEff):
 
     @property
     def biotype(self):
-        return self.effects['Gene_BioType']
+        if 'Gene_BioType' in self.effects:
+            return self.effects['Gene_BioType']
+        return self.effects['Transcript_BioType']
+
 
     @property
     def consequence(self):
@@ -622,11 +625,18 @@ class OldSnpEff(SnpEff):
     @property
     def severity(self, lookup={'HIGH': 3, 'MED': 2, 'LOW': 1}):
         # higher is more severe. used for ordering.
-        return max(lookup[old_snpeff_lookup[csq]] for csq in self.consequences)
+        try:
+            return max(lookup[old_snpeff_lookup[csq]] for csq in self.consequences)
+        except KeyError:
+            #in between
+            return max(lookup[IMPACT_SEVERITY[csq]] for csq in self.consequences)
 
     @property
     def transcript(self):
-        return self.effects['Transcript'] or None
+        if 'Transcript' in self.effects:
+            return self.effects['Transcript'] or None
+        return self.effects['Transcript_ID']
+
 
     @property
     def is_exonic(self, _s=old_snpeff_exonic):
@@ -643,7 +653,10 @@ class OldSnpEff(SnpEff):
 
     @property
     def exon(self):
-        return self.effects['Exon']
+        try:
+            return self.effects['Exon']
+        except:
+            return self.effects['Exon_Rank']
 
     @property
     def codon_change(self):
@@ -663,7 +676,10 @@ class OldSnpEff(SnpEff):
         e = self.effects["Effect"]
         if "+" in e:
             e = e.split('+')[0]
-        return old_snpeff_effect_so[e]
+        try:
+            return old_snpeff_effect_so[e]
+        except:
+            return e
 
 
 if __name__ == "__main__":
