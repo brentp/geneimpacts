@@ -1,7 +1,7 @@
 import sys
 import os
 import gzip
-from geneimpacts import SnpEff, VEP, Effect
+from geneimpacts import SnpEff, VEP, Effect, OldSnpEff
 
 
 HERE = os.path.dirname(__file__)
@@ -80,6 +80,31 @@ def test_order():
     assert effects[-1].impact_severity == "MED"
     assert effects[0].impact_severity == "LOW"
 
+def test_o2():
+
+    keys = [x.strip() for x in "Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Gene_BioType | Coding | Transcript | Exon  | ERRORS | WARNINGS".split("|")]
+
+    effects = [OldSnpEff(v, keys) for v in "DOWNSTREAM(MODIFIER|||||RP5-902P8.10|processed_transcript|NON_CODING|ENST00000434139|),DOWNSTREAM(MODIFIER|||||RP5-902P8.10|processed_transcript|NON_CODING|ENST00000453732|),INTRON(MODIFIER||||138|SCNN1D|protein_coding|CODING|ENST00000470022|3),INTRON(MODIFIER||||638|SCNN1D|protein_coding|CODING|ENST00000338555|3),INTRON(MODIFIER||||638|SCNN1D|protein_coding|CODING|ENST00000400928|2),INTRON(MODIFIER||||669|SCNN1D|protein_coding|CODING|ENST00000379110|6),INTRON(MODIFIER||||704|SCNN1D|protein_coding|CODING|ENST00000325425|2),INTRON(MODIFIER||||802|SCNN1D|protein_coding|CODING|ENST00000379116|5),INTRON(MODIFIER|||||SCNN1D|nonsense_mediated_decay|CODING|ENST00000379101|5),INTRON(MODIFIER|||||SCNN1D|processed_transcript|CODING|ENST00000467651|3)".split(",")]
+
+    effects = sorted(effects)
+    assert effects[-1].gene == "SCNN1D"
+
+
+    effects = sorted([OldSnpEff(v, keys) for v in "DOWNSTREAM(MODIFIER||||85|FAM138A|protein_coding|CODING|ENST00000417324|),DOWNSTREAM(MODIFIER|||||FAM138A|processed_transcript|CODING|ENST00000461467|),DOWNSTREAM(MODIFIER|||||MIR1302-10|miRNA|NON_CODING|ENST00000408384|),EXON(MODIFIER|||||MIR1302-10|antisense|NON_CODING|ENST00000469289|1),INTRON(MODIFIER|||||MIR1302-10|antisense|NON_CODING|ENST00000473358|1),UPSTREAM(MODIFIER|||||WASH7P|unprocessed_pseudogene|NON_CODING|ENST00000423562|),UPSTREAM(MODIFIER|||||WASH7P|unprocessed_pseudogene|NON_CODING|ENST00000430492|),UPSTREAM(MODIFIER|||||WASH7P|unprocessed_pseudogene|NON_CODING|ENST00000438504|),UPSTREAM(MODIFIER|||||WASH7P|unprocessed_pseudogene|NON_CODING|ENST00000488147|),UPSTREAM(MODIFIER|||||WASH7P|unprocessed_pseudogene|NON_CODING|ENST00000538476|)".split(",")])
+    s = "\n".join(e.effect_string for e in effects[::-1])
+
+    # reversed so that most significant is first
+    assert s == """\
+DOWNSTREAM(MODIFIER||||85|FAM138A|protein_coding|CODING|ENST00000417324|
+DOWNSTREAM(MODIFIER|||||FAM138A|processed_transcript|CODING|ENST00000461467|
+INTRON(MODIFIER|||||MIR1302-10|antisense|NON_CODING|ENST00000473358|1
+EXON(MODIFIER|||||MIR1302-10|antisense|NON_CODING|ENST00000469289|1
+DOWNSTREAM(MODIFIER|||||MIR1302-10|miRNA|NON_CODING|ENST00000408384|
+UPSTREAM(MODIFIER|||||WASH7P|unprocessed_pseudogene|NON_CODING|ENST00000423562|
+UPSTREAM(MODIFIER|||||WASH7P|unprocessed_pseudogene|NON_CODING|ENST00000430492|
+UPSTREAM(MODIFIER|||||WASH7P|unprocessed_pseudogene|NON_CODING|ENST00000438504|
+UPSTREAM(MODIFIER|||||WASH7P|unprocessed_pseudogene|NON_CODING|ENST00000488147|
+UPSTREAM(MODIFIER|||||WASH7P|unprocessed_pseudogene|NON_CODING|ENST00000538476|"""
 
 def test_highest():
     effects = sorted(EFFECTS)

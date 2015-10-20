@@ -125,136 +125,82 @@ EXONIC_IMPACTS = set(["stop_gained",
                       "feature_truncation"])
 
 
-IMPACT_SEVERITY = dict([
-    ('non_coding_exon_variant', 'LOW'),
-    ('incomplete_terminal_codon_variant', 'LOW'),
-    ('stop_retained_variant', 'LOW'),
-    ('synonymous_variant', 'LOW'),
-    ('coding_sequence_variant', 'LOW'),
-    ('5_prime_UTR_variant', 'LOW'),
-    ('3_prime_UTR_variant', 'LOW'),
-    ('intron_variant', 'LOW'),
-    ('NMD_transcript_variant', 'LOW'),
-    ('nc_transcript_variant', 'LOW'),
-    ('upstream_gene_variant', 'LOW'),
-    ('downstream_gene_variant', 'LOW'),
-    ('intergenic_variant', 'LOW'),
-    ('transcript_amplification', 'LOW'),
-    ('feature_elongation', 'LOW'),
-    ('feature_truncation', 'LOW'),
-
-    ('inframe_deletion', 'MED'),
-    ('inframe_insertion', 'MED'),
-    ('missense_variant', 'MED'),
-    ('splice_region_variant', 'MED'),
-    ('mature_miRNA_variant', 'MED'),
-    ('regulatory_region_variant', 'MED'),
-    ('TF_binding_site_variant', 'MED'),
-    ('regulatory_region_ablation', 'MED'),
-    ('regulatory_region_amplification', 'MED'),
-    ('TFBS_ablation', 'MED'),
-    ('TFBS_amplification', 'MED'),
-
-    ('transcript_ablation', 'HIGH'),
-    ('splice_acceptor_variant', 'HIGH'),
-    ('splice_donor_variant', 'HIGH'),
-    ('stop_gained', 'HIGH'),
-    ('stop_lost', 'HIGH'),
-    ('frameshift_variant', 'HIGH'),
-    ('initiator_codon_variant', 'HIGH'),
-
-])
-
-# these are taken from the snpeff manual.
-# with MODIFIER => LOW and MEDIUM => MED
-IMPACT_SEVERITY_SNPEFF = dict([
-    ('chromosome_number_variation', 'HIGH'),
-    ('exon_loss_variant', 'HIGH'),
-    ('exon_loss', 'HIGH'),
-    ('rare_amino_acid_variant', 'HIGH'),
-    ('start_lost', 'HIGH'),
-
-    ('3_prime_UTR_truncation', 'MED'),
-    ('5_prime_UTR_truncation', 'MED'),
-    ('disruptive_inframe_deletion', 'MED'),
-    ('disruptive_inframe_insertion', 'MED'),
-
-    ('5_prime_UTR_premature_start_codon_gain_variant', 'LOW'),
-    ('conserved_intergenic_variant', 'LOW'),
-    ('conserved_intron_variant', 'LOW'),
-    ('exon_variant', 'LOW'),
-    ('gene_variant', 'LOW'),
-    ('intergenic_region', 'LOW'),
-    ('intragenic_variant', 'LOW'),
-    ('miRNA', 'LOW'),
-    ('non_coding_transcript_exon_variant', 'LOW'),
-    ('non_coding_transcript_variant', 'LOW'),
-    ('start_retained', 'LOW'),
-    ('transcript_variant', 'LOW'),
-])
+# I decided these myself.
 
 # http://uswest.ensembl.org/info/genome/variation/predicted_data.html#consequences
-IMPACT_SEVERITY_VEP = dict([
-    ('transcript_ablation', 'HIGH'),
-    ('splice_acceptor_variant', 'HIGH'),
-    ('splice_donor_variant', 'HIGH'),
-    ('stop_gained', 'HIGH'),
-    ('frameshift_variant', 'HIGH'),
-    ('stop_lost', 'HIGH'),
-    ('start_lost', 'HIGH'),
-    ('transcript_amplification', 'HIGH'),
-
-    ('inframe_insertion', 'MED'),
-    ('inframe_deletion', 'MED'),
-    ('missense_variant', 'MED'),
-    ('protein_altering_variant', 'MED'),
-    ('regulatory_region_ablation', 'MED'),
-    ('TFBS_ablation', 'MED'),
-
-    ('splice_region_variant', 'LOW'),
-    ('incomplete_terminal_codon_variant', 'LOW'),
-    ('stop_retained_variant', 'LOW'),
-    ('synonymous_variant', 'LOW'),
-    ('coding_sequence_variant', 'LOW'),
-    ('mature_miRNA_variant', 'LOW'),
-    ('5_prime_UTR_variant', 'LOW'),
-    ('3_prime_UTR_variant', 'LOW'),
-    ('non_coding_transcript_exon_variant', 'LOW'),
-    ('intron_variant', 'LOW'),
-    ('NMD_transcript_variant', 'LOW'),
-    ('non_coding_transcript_variant', 'LOW'),
-    ('upstream_gene_variant', 'LOW'),
-    ('downstream_gene_variant', 'LOW'),
-    ('TFBS_amplification', 'LOW'),
-    ('TF_binding_site_variant', 'LOW'),
-    ('regulatory_region_amplification', 'LOW'),
-    ('feature_elongation', 'LOW'),
-    ('regulatory_region_variant', 'LOW'),
-    ('feature_truncation', 'LOW'),
-    ('intergenic_variant', 'LOW'),
-])
+IMPACT_SEVERITY = [
+    ('chromosome_number_variation', 'HIGH'), # snpEff
+    ('transcript_ablation', 'HIGH'), # VEP
+    ('exon_loss_variant', 'HIGH'), # snpEff
+    ('exon_loss', 'HIGH'), # snpEff
+    ('rare_amino_acid_variant', 'HIGH'),
+    ('splice_acceptor_variant', 'HIGH'), # VEP
+    ('splice_donor_variant', 'HIGH'), # VEP
+    ('stop_gained', 'HIGH'), # VEP
+    ('frameshift_variant', 'HIGH'), # VEP
+    ('stop_lost', 'HIGH'), # VEP
+    ('start_lost', 'HIGH'), # VEP
+    ('transcript_amplification', 'HIGH'), # VEP
 
 
-# I decided these myself.
-IMPACT_SEVERITY_CUSTOM = dict([
-    ('sequence_feature', 'LOW'),
-    ('transcript', 'LOW'),  # ? snpEff
+    ('disruptive_inframe_deletion', 'MED'), #snpEff
+    ('disruptive_inframe_insertion', 'MED'), #snpEff
+    ('inframe_insertion', 'MED'), # VEP
+    ('inframe_deletion', 'MED'), # VEP
+    ('missense_variant', 'MED'), # VEP
+    ('protein_altering_variant', 'MED'), # VEP
+    ('initiator_codon_variant', 'MED'), # snpEff
+    ('regulatory_region_ablation', 'MED'), # VEP
 
-    # occurs with 'exon_loss' in snpEff
-    ('3_prime_UTR_truncation', 'MED'),
-    ('3_prime_UTR_truncation+exon_loss', 'MED'),
-    ('3_prime_UTR_truncation+exon_loss_variant', 'MED'),
-    ('exon_loss', 'MED'),
+    ('3_prime_UTR_truncation', 'LOW'), # found in snpEff
+    ('5_prime_UTR_truncation', 'MED'), # found in snpEff
+    ('non_canonical_start_codon', 'LOW'), # found in snpEff
 
-    ('5_prime_UTR_truncation', 'MED'),
-    ('5_prime_UTR_truncation+exon_loss_variant', 'MED'),
-    ('non_canonical_start_codon', 'LOW'),
-    ('initiator_codon_variant', 'LOW'),
-])
+    ('splice_region_variant', 'LOW'), # VEP
+    ('incomplete_terminal_codon_variant', 'LOW'), # VEP
+    ('stop_retained_variant', 'LOW'), # VEP
+    ('mature_miRNA_variant', 'LOW'), # VEP
+    ('synonymous_variant', 'LOW'), # VEP
+    ('coding_sequence_variant', 'LOW'), # VEP
+    ('5_prime_UTR_premature_start_codon_gain_variant', 'LOW'), # snpEff
+    ('5_prime_UTR_variant', 'LOW'), # VEP
+    ('3_prime_UTR_variant', 'LOW'), # VEP
 
-IMPACT_SEVERITY.update(IMPACT_SEVERITY_SNPEFF)
-IMPACT_SEVERITY.update(IMPACT_SEVERITY_CUSTOM)
-IMPACT_SEVERITY.update(IMPACT_SEVERITY_VEP)
+
+    ('non_coding_transcript_exon_variant', 'LOW'), # VEP
+    ('conserved_intron_variant', 'LOW'), # snpEff
+    ('intron_variant', 'LOW'), # VEP
+    ('exon_variant', 'LOW'), # snpEff
+    ('gene_variant', 'LOW'), # snpEff
+    ('NMD_transcript_variant', 'LOW'), # VEP
+    ('non_coding_transcript_variant', 'LOW'), # VEP
+    ('upstream_gene_variant', 'LOW'), # VEP
+    ('downstream_gene_variant', 'LOW'), # VEP
+    ('TFBS_ablation', 'LOW'), # VEP
+    ('TFBS_amplification', 'LOW'), # VEP
+    ('TF_binding_site_variant', 'LOW'), # VEP
+    ('regulatory_region_amplification', 'LOW'), # VEP
+    ('feature_elongation', 'LOW'), # VEP
+    ('miRNA', 'LOW'), # snpEff
+    ('transcript_variant', 'LOW'), # snpEff
+    ('start_retained', 'LOW'), # snpEff
+    ('regulatory_region_variant', 'LOW'), # VEP
+    ('feature_truncation', 'LOW'), # VEP
+    ('non_coding_exon_variant', 'LOW'),
+    ('nc_transcript_variant', 'LOW'),
+    ('conserved_intergenic_variant', 'LOW'), # snpEff
+    ('intergenic_variant', 'LOW'), # VEP
+    ('intergenic_region', 'LOW'), # snpEff
+    ('intragenic_variant', 'LOW'), # snpEff
+    ('non_coding_transcript_exon_variant', 'LOW'), # snpEff
+    ('non_coding_transcript_variant', 'LOW'), # snpEff
+    ('transcript', 'LOW'),  # ? snpEff older
+    ('sequence_feature', 'LOW'), # snpEff older
+
+]
+
+IMPACT_SEVERITY_ORDER = dict((x[0], i) for i, x in enumerate(IMPACT_SEVERITY[::-1]))
+IMPACT_SEVERITY = dict(IMPACT_SEVERITY)
 
 
 so_exonic_impacts = frozenset(["stop_gained",
@@ -313,6 +259,17 @@ class Effect(object):
         if self.severity != other.severity:
             return self.severity <= other.severity
 
+        if self.biotype == "protein_coding" and not other.biotype == "protein_coding":
+            return False
+        elif other.biotype == "protein_coding" and not self.biotype == "protein_coding":
+            return True
+
+        if self.biotype == "processed_transcript" and not other.biotype == "processed_transcript":
+            return False
+        elif other.biotype == "processed_transcript" and not self.biotype == "processed_transcript":
+            return True
+
+
         # sift higher == more damaing
         if self.sift_value < other.sift_value:
             return True
@@ -321,8 +278,8 @@ class Effect(object):
         if self.polyphen_value > other.polyphen_value:
             return True
 
-        return True
-        # TODO: look at transcript length?
+        return max(IMPACT_SEVERITY_ORDER[c] for c in self.consequences) <= \
+                        max(IMPACT_SEVERITY_ORDER[co] for co in other.consequences)
 
     @classmethod
     def top_severity(cls, effects):
@@ -619,8 +576,8 @@ class OldSnpEff(SnpEff):
 
     @property
     def consequences(self):
-        return list(it.chain.from_iterable(x.split("+") for x in
-            self.effects['Effect'].split('&')))
+        return [old_snpeff_effect_so[c] for c in it.chain.from_iterable(x.split("+") for x in
+            self.effects['Effect'].split('&'))]
 
     @property
     def severity(self, lookup={'HIGH': 3, 'MED': 2, 'LOW': 1}):
