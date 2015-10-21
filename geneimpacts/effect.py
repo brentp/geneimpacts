@@ -42,33 +42,6 @@ old_snpeff_effect_so = {'CDS': 'coding_sequence_variant',
                'NONE': 'None',
                'CHROMOSOME_LARGE_DELETION': 'chromosomal_deletion'}
 
-old_snpeff_exonic = frozenset(["CODON_CHANGE",
-"CODON_CHANGE_PLUS_CODON_DELETION",
-"CODON_CHANGE_PLUS_CODON_INSERTION",
-"CODON_DELETION",
-"CODON_INSERTION",
-"EXON",
-"EXON_DELETED",
-"FRAME_SHIFT",
-"GENE",
-"NON_SYNONYMOUS_CODING",
-"RARE_AMINO_ACID",
-"START_GAINED",
-"START_LOST",
-"STOP_GAINED",
-"STOP_LOST",
-"SYNONYMOUS_CODING",
-"SYNONYMOUS_START",
-"SYNONYMOUS_STOP",
-"TRANSCRIPT",
-"UTR_3_DELETED",
-"UTR_3_PRIME",
-"UTR_5_DELETED",
-"UTR_5_PRIME",
-"NON_SYNONYMOUS_START",
-"CHROMOSOME_LARGE_DELETION"])
-
-
 old_snpeff_lookup = {'CDS': 'LOW',
  'CHROMOSOME_LARGE_DELETION': 'HIGH',
  'CODON_CHANGE': 'MED',
@@ -134,17 +107,19 @@ IMPACT_SEVERITY = [
     ('initiator_codon_variant', 'MED'), # snpEff
     ('regulatory_region_ablation', 'MED'), # VEP
 
-    ('3_prime_UTR_truncation', 'LOW'), # found in snpEff
     ('5_prime_UTR_truncation', 'MED'), # found in snpEff
+
+    ('3_prime_UTR_truncation', 'LOW'), # found in snpEff
     ('non_canonical_start_codon', 'LOW'), # found in snpEff
 
+    ('synonymous_variant', 'LOW'), # VEP
+    ('coding_sequence_variant', 'LOW'), # VEP
     ('splice_region_variant', 'LOW'), # VEP
     ('incomplete_terminal_codon_variant', 'LOW'), # VEP
     ('stop_retained_variant', 'LOW'), # VEP
     ('mature_miRNA_variant', 'LOW'), # VEP
-    ('synonymous_variant', 'LOW'), # VEP
-    ('coding_sequence_variant', 'LOW'), # VEP
     ('5_prime_UTR_premature_start_codon_variant', 'LOW'), # snpEff
+    ('5_prime_UTR_premature_start_codon_gain_variant', 'LOW'), #snpEff
     ('5_prime_UTR_variant', 'LOW'), # VEP
     ('3_prime_UTR_variant', 'LOW'), # VEP
 
@@ -186,6 +161,7 @@ IMPACT_SEVERITY = dict(IMPACT_SEVERITY)
 
 
 EXONIC_IMPACTS = frozenset(["stop_gained",
+                     "exon_variant",
                      "stop_lost",
                      "frameshift_variant",
                      "initiator_codon_variant",
@@ -207,6 +183,7 @@ EXONIC_IMPACTS = frozenset(["stop_gained",
 
 @total_ordering
 class Effect(object):
+    _top_consequence = None
 
     def __init__(self, effect_dict):
         # or maybe arg should be a dict for Effect()
@@ -214,15 +191,23 @@ class Effect(object):
 
     @property
     def is_exonic(self):
-        return any(c in EXONIC_IMPACTS for c in self.consequences)
+        return self.top_consequence in EXONIC_IMPACTS
 
     @property
     def top_consequence(self):
-        return self.consequences[0]
+        # sort by order and return the top
+        if self._top_consequence is None:
+            self._top_consequence = sorted([(IMPACT_SEVERITY_ORDER[c], c) for c in
+            self.consequences], reverse=True)[0][1]
+        return self._top_consequence
 
     @property
     def is_coding(self):
-        return self.is_exonic and any("_prime_UTR_variant" not in c for c in self.consequences)
+        return self.is_exonic and ("_UTR_" not in self.top_consequence)
+
+    @property
+    def is_splicing(self):
+        return "splice" in self.top_consequence
 
     @property
     def is_lof(self):
@@ -309,19 +294,8 @@ class Effect(object):
         raise NotImplementedError
 
     @property
-    def exonic(self):
-        raise NotImplementedError
-
-    @property
-    def coding(self):
-        raise NotImplementedError
-        return True
-
-    @property
     def lof(self):
         return self.impact_severity == "HIGH" and self.biotype == "protein_coding"
-        raise NotImplementedError
-        return True
 
     @property
     def aa_change(self):
@@ -342,7 +316,7 @@ class Effect(object):
 
     @property
     def consequence(self):
-        raise NotImplementedError
+        return self.top_consequence
 
     @property
     def biotype(self):
@@ -379,12 +353,6 @@ class SnpEff(Effect):
         return self.effects['Rank']
 
     @property
-    def consequence(self):
-        if '&' in self.effects['Annotation']:
-            return self.effects['Annotation'].split('&')
-        return self.effects['Annotation']
-
-    @property
     def consequences(self):
         return list(it.chain.from_iterable(x.split("+") for x in self.effects['Annotation'].split('&')))
 
@@ -410,7 +378,11 @@ class SnpEff(Effect):
         return any(csq in EXONIC_IMPACTS for csq in csqs) and self.effects['Transcript_BioType'] == 'protein_coding'
 
     # not defined in ANN field.
-    aa_change = None
+    @property
+    def aa_change(self):
+        if 'Amino_Acid_change' in self.effects:
+            return self.effects['Amino_Acid_change']
+
     sift = None
     sift_value = None
     sift_class = None
@@ -455,12 +427,6 @@ class VEP(Effect):
     @property
     def exon(self):
         return self.effects['EXON']
-
-    @property
-    def consequence(self):
-        if '&' in self.effects['Consequence']:
-            return self.effects['Consequence'].split('&')
-        return self.effects['Consequence']
 
     @property
     def so(self):
@@ -533,6 +499,7 @@ class VEP(Effect):
     def aa_change(self):
         return self.effects['Amino_acids']
 
+
 class OldSnpEff(SnpEff):
 
     def __init__(self, effect_string, keys=None, _patt=re.compile("\||\(")):
@@ -577,11 +544,6 @@ class OldSnpEff(SnpEff):
         if 'Transcript' in self.effects:
             return self.effects['Transcript'] or None
         return self.effects['Transcript_ID']
-
-    @property
-    def is_coding(self):
-        return self.is_exonic and not (self.effects['Effect'] == "START_GAINED" or
-                                       self.effects['Effect'].startswith("UTR_"))
 
     @property
     def is_lof(self):

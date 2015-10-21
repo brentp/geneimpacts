@@ -119,3 +119,19 @@ def test_highest():
     top = Effect.top_severity(effects)
     assert isinstance(top, list)
     assert top[0].impact_severity == "MED"
+
+def test_splice():
+
+    e = VEP('splice_acceptor_variant&intron_variant&feature_truncation|||ENSG00000221978|CCNL2|ENST00000408918||||-/226|protein_coding|1')
+    assert (e.is_coding, e.is_exonic, e.is_splicing) == (False, False, True)
+
+    e = VEP('intron_variant&feature_elongation|||ENSG00000187634|SAMD11|ENST00000341065||||-/589|protein_coding|1')
+    assert (e.is_coding, e.is_exonic, e.is_splicing) == (False, False, False)
+
+def test_eff_splice():
+
+    keys = [x.strip() for x in "Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Gene_BioType Coding | Transcript | Exon  | ERRORS | WARNINGS".split("|")]
+
+    e = OldSnpEff("SPLICE_SITE_REGION+SYNONYMOUS_CODING(LOW|SILENT|acG/acA|T245|1134|ANKS1A|protein_coding|CODING|ENST00000360359|5|A)", keys)
+    assert e.aa_change == "T245"
+    assert e.is_coding, e.is_coding
