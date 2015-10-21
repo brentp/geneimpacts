@@ -130,8 +130,10 @@ def test_splice():
 
 def test_eff_splice():
 
-    keys = [x.strip() for x in "Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Gene_BioType Coding | Transcript | Exon  | ERRORS | WARNINGS".split("|")]
-
+    keys = [x.strip() for x in "Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Gene_BioType |  Coding | Transcript | Exon  | ERRORS | WARNINGS".split("|")]
     e = OldSnpEff("SPLICE_SITE_REGION+SYNONYMOUS_CODING(LOW|SILENT|acG/acA|T245|1134|ANKS1A|protein_coding|CODING|ENST00000360359|5|A)", keys)
+    print e.effects
     assert e.aa_change == "T245"
     assert e.is_coding, e.is_coding
+    # note that we choose synonymous coding over splice_site_region
+    assert not e.is_splicing

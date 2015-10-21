@@ -203,7 +203,7 @@ class Effect(object):
 
     @property
     def is_coding(self):
-        return self.is_exonic and ("_UTR_" not in self.top_consequence)
+        return self.biotype == "protein_coding" and self.is_exonic and ("_UTR_" not in self.top_consequence)
 
     @property
     def is_splicing(self):
@@ -515,6 +515,8 @@ class OldSnpEff(SnpEff):
     def biotype(self):
         if 'Gene_BioType' in self.effects:
             return self.effects['Gene_BioType']
+        if 'Transcript_BioType' in self.effects:
+            return self.effects['Transcript_BioType']
         return self.effects['Transcript_BioType']
 
 
@@ -587,5 +589,5 @@ if __name__ == "__main__":
     print s.gene, s.transcript, s.consequence, s.is_pseudogene
     s = SnpEff("G|splice_donor_variant&intron_variant|HIGH|WASH7P|ENSG00000227232|transcript|ENST00000423562|unprocessed_pseudogene|6/9|n.822+2T>C||||||")
     print s.is_pseudogene
-    s = SnpEff("G|missense_variant|MODERATE|OR4F5|ENSG00000186092|transcript|ENST00000335137|protein_coding|1/1|c.338T>G|p.Phe113Cys|338/918|338/918|113/305||")
-    print s.coding, s.consequence, s.aa_change
+    #s = SnpEff("G|missense_variant|MODERATE|OR4F5|ENSG00000186092|transcript|ENST00000335137|protein_coding|1/1|c.338T>G|p.Phe113Cys|338/918|338/918|113/305||")
+    #print s.coding, s.consequence, s.aa_change
