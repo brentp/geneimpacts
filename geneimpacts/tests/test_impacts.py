@@ -136,4 +136,10 @@ def test_eff_splice():
     assert e.aa_change == "T245"
     assert e.is_coding, e.is_coding
     # note that we choose synonymous coding over splice_site_region
+
     assert not e.is_splicing
+
+    e = OldSnpEff("intergenic_region(MODIFIER|||n.null_nulldelAAGGAAGG|||||||A",
+            keys)
+    assert e.consequences != []
+

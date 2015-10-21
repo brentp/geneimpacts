@@ -14,6 +14,7 @@ old_snpeff_effect_so = {'CDS': 'coding_sequence_variant',
                'FRAME_SHIFT': 'frameshift_variant',
                'GENE': 'gene_variant',
                'INTERGENIC': 'intergenic_variant',
+               'INTERGENIC_REGION': 'intergenic_region',
                'INTERGENIC_CONSERVED': 'conserved_intergenic_variant',
                'INTRAGENIC': 'intragenic_variant',
                'INTRON': 'intron_variant',
@@ -525,8 +526,12 @@ class OldSnpEff(SnpEff):
 
     @property
     def consequences(self):
-        return [old_snpeff_effect_so[c] for c in it.chain.from_iterable(x.split("+") for x in
-            self.effects['Effect'].split('&'))]
+        try:
+            return [old_snpeff_effect_so.get(c, old_snpeff_effect_so[c.upper()]) for c in it.chain.from_iterable(x.split("+") for x in
+                self.effects['Effect'].split('&'))]
+        except KeyError:
+            return list(it.chain.from_iterable(x.split("+") for x in self.effects['Effect'].split('&')))
+
 
     @property
     def severity(self, lookup={'HIGH': 3, 'MED': 2, 'LOW': 1}):
@@ -582,9 +587,9 @@ class OldSnpEff(SnpEff):
 if __name__ == "__main__":
 
     s = SnpEff("A|stop_gained|HIGH|C1orf170|ENSG00000187642|transcript|ENST00000433179|protein_coding|3/5|c.262C>T|p.Arg88*|262/3064|262/2091|88/696||")
-    print s.effects
-    print s.gene, s.transcript, s.consequence, s.is_pseudogene
+    #print s.effects
+    #print s.gene, s.transcript, s.consequence, s.is_pseudogene
     s = SnpEff("G|splice_donor_variant&intron_variant|HIGH|WASH7P|ENSG00000227232|transcript|ENST00000423562|unprocessed_pseudogene|6/9|n.822+2T>C||||||")
-    print s.is_pseudogene
+    #print s.is_pseudogene
     #s = SnpEff("G|missense_variant|MODERATE|OR4F5|ENSG00000186092|transcript|ENST00000335137|protein_coding|1/1|c.338T>G|p.Phe113Cys|338/918|338/918|113/305||")
     #print s.coding, s.consequence, s.aa_change
