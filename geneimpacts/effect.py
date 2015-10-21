@@ -2,7 +2,6 @@ from functools import total_ordering
 import re
 import itertools as it
 
-
 old_snpeff_effect_so = {'CDS': 'coding_sequence_variant',
                'CODON_CHANGE': 'coding_sequence_variant',
                'CODON_CHANGE_PLUS_CODON_DELETION': 'disruptive_inframe_deletion',
@@ -159,26 +158,25 @@ IMPACT_SEVERITY = [
 IMPACT_SEVERITY_ORDER = dict((x[0], i) for i, x in enumerate(IMPACT_SEVERITY[::-1]))
 IMPACT_SEVERITY = dict(IMPACT_SEVERITY)
 
-
 EXONIC_IMPACTS = frozenset(["stop_gained",
-                     "exon_variant",
-                     "stop_lost",
-                     "frameshift_variant",
-                     "initiator_codon_variant",
-                     "inframe_deletion",
-                     "inframe_insertion",
-                     "missense_variant",
-                     "incomplete_terminal_codon_variant",
-                     "stop_retained_variant",
-                     "5_prime_UTR_premature_start_codon_variant",
-                     "synonymous_variant",
-                     "coding_sequence_variant",
-                     "5_prime_UTR_variant",
-                     "3_prime_UTR_variant",
-                     "transcript_ablation",
-                     "transcript_amplification",
-                     "feature_elongation",
-                     "feature_truncation"])
+                            "exon_variant",
+                            "stop_lost",
+                            "frameshift_variant",
+                            "initiator_codon_variant",
+                            "inframe_deletion",
+                            "inframe_insertion",
+                            "missense_variant",
+                            "incomplete_terminal_codon_variant",
+                            "stop_retained_variant",
+                            "5_prime_UTR_premature_start_codon_variant",
+                            "synonymous_variant",
+                            "coding_sequence_variant",
+                            "5_prime_UTR_variant",
+                            "3_prime_UTR_variant",
+                            "transcript_ablation",
+                            "transcript_amplification",
+                            "feature_elongation",
+                            "feature_truncation"])
 
 
 @total_ordering
@@ -236,7 +234,6 @@ class Effect(object):
             return False
         elif other.biotype == "processed_transcript" and not self.biotype == "processed_transcript":
             return True
-
 
         # sift higher == more damaing
         if self.sift_value < other.sift_value:
@@ -407,7 +404,7 @@ class VEP(Effect):
 
     @property
     def gene(self):
-        return self.effects['SYMBOL'] or self.effects['Gene']
+        return self.effects['SYMBOL'] or self.effects['Gene'] or None
 
     @property
     def codon_change(self):
