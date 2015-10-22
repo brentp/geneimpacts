@@ -381,6 +381,20 @@ class SnpEff(Effect):
         if 'Amino_Acid_change' in self.effects:
             return self.effects['Amino_Acid_change']
 
+    @property
+    def aa_length(self):
+        v = self.effects['AA.pos / AA.length']
+        if v.strip():
+            return int(v.split("/")[1].strip())
+
+    @property
+    def codon_change(self):
+        return self.effects['HGVS.c']
+
+    @property
+    def so(self):
+        return self.effects['Annotation']
+
     sift = None
     sift_value = None
     sift_class = None
