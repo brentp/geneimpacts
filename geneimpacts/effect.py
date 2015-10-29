@@ -375,11 +375,10 @@ class SnpEff(Effect):
             csqs = [csqs]
         return any(csq in EXONIC_IMPACTS for csq in csqs) and self.effects['Transcript_BioType'] == 'protein_coding'
 
-    # not defined in ANN field.
     @property
     def aa_change(self):
-        if 'Amino_Acid_change' in self.effects:
-            return self.effects['Amino_Acid_change']
+        if 'HGVS.p' in self.effects:
+            return self.effects['HGVS.p']
 
     @property
     def aa_length(self):
@@ -514,6 +513,8 @@ class VEP(Effect):
 
 class OldSnpEff(SnpEff):
 
+    keys = [x.strip() for x in "Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Gene_BioType | Coding | Transcript | Exon  | ERRORS | WARNINGS".split("|")]
+
     def __init__(self, effect_string, keys=None, _patt=re.compile("\||\(")):
         assert not "," in effect_string
         assert not "=" in effect_string
@@ -578,6 +579,14 @@ class OldSnpEff(SnpEff):
         if any(c in ("UPSTREAM", "DOWNSTREAM") for c in self.consequences):
             return self.effects["Codon_Change"]
         return None
+
+    @property
+    def aa_change(self):
+        # different versions of SnpEff have different capitalizations
+        if 'Amino_Acid_change' in self.effects:
+            return self.effects['Amino_Acid_change']
+        elif 'Amino_Acid_Change' in self.effects:
+            return self.effects['Amino_Acid_Change']
 
     @property
     def aa_length(self):

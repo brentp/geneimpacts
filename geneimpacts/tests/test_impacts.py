@@ -16,7 +16,7 @@ def test_snpeff():
     assert ann.consequences == 'splice_donor_variant&splice_region_variant&splice_region_variant&intron_variant'.split('&')
     assert ann.severity == 3
     assert ann.impact_severity == "HIGH"
-    assert ann.aa_change is None
+    assert ann.aa_change == ""
     assert ann.exon == '3/3', ann.exon
     assert not ann.coding
     assert ann.is_pseudogene
@@ -144,11 +144,12 @@ def test_eff_splice():
     assert e.consequences != []
 
 def test_regr():
-    keys = [x.strip() for x in 'Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_Change| Amino_Acid_length | Gene_Name | Transcript_BioType | Gene_Coding | Transcript_ID | Exon_Rank  | Genotype_Number  | ERRORS | WARNINGS'.split("|")]
+    keys = [x.strip() for x in 'Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Transcript_BioType | Gene_Coding | Transcript_ID | Exon_Rank  | Genotype_Number  | ERRORS | WARNINGS'.split("|")]
     print keys
     v = OldSnpEff('SPLICE_SITE_REGION+SYNONYMOUS_CODING(LOW|SILENT|acG/acA|T245|1134|ANKS1A|protein_coding|CODING|ENST00000360359|5|A)', keys)
     assert v.consequences == ['splice_region_variant', 'synonymous_variant'], v.consequences
     assert v.severity == 1, v.severity
+    assert v.aa_change == 'T245'
     v = OldSnpEff('UPSTREAM(MODIFIER||2771|||PSMB1|processed_transcript|CODING|ENST00000462957||C)', keys)
     assert v.consequences == ['upstream_gene_variant'], v.consequences
     assert v.severity == 1, v.severity
@@ -158,3 +159,10 @@ def test_regr():
     assert v.severity == 1, v.severity
 
     assert v <= v
+
+def test_aa_change():
+
+    eff = OldSnpEff('NON_SYNONYMOUS_CODING(MODERATE|MISSENSE|Agc/Ggc|S418G|696|C1orf170|protein_coding|CODING|ENST00000433179|3|C)')
+    assert eff.aa_change == 'S418G'
+    ann = SnpEff('C|missense_variant|MODERATE|C1orf170|ENSG00000187642|transcript|ENST00000433179|protein_coding|3/5|c.1252A>G|p.Ser418Gly|1252/3064|1252/2091|418/696||')
+    assert ann.aa_change == 'p.Ser418Gly'
