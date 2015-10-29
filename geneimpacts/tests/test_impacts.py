@@ -143,3 +143,18 @@ def test_eff_splice():
             keys)
     assert e.consequences != []
 
+def test_regr():
+    keys = [x.strip() for x in 'Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_Change| Amino_Acid_length | Gene_Name | Transcript_BioType | Gene_Coding | Transcript_ID | Exon_Rank  | Genotype_Number  | ERRORS | WARNINGS'.split("|")]
+    print keys
+    v = OldSnpEff('SPLICE_SITE_REGION+SYNONYMOUS_CODING(LOW|SILENT|acG/acA|T245|1134|ANKS1A|protein_coding|CODING|ENST00000360359|5|A)', keys)
+    assert v.consequences == ['splice_region_variant', 'synonymous_variant'], v.consequences
+    assert v.severity == 1, v.severity
+    v = OldSnpEff('UPSTREAM(MODIFIER||2771|||PSMB1|processed_transcript|CODING|ENST00000462957||C)', keys)
+    assert v.consequences == ['upstream_gene_variant'], v.consequences
+    assert v.severity == 1, v.severity
+
+    v = OldSnpEff('NEXT_PROT[maturation_peptide](LOW||||241|PSMB1|protein_coding|CODING|||C)', keys)
+    assert v.consequences == ['NEXT_PROT[maturation_peptide]'], v.consequences
+    assert v.severity == 1, v.severity
+
+    assert v <= v

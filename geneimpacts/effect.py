@@ -196,7 +196,7 @@ class Effect(object):
     def top_consequence(self):
         # sort by order and return the top
         if self._top_consequence is None:
-            self._top_consequence = sorted([(IMPACT_SEVERITY_ORDER[c], c) for c in
+            self._top_consequence = sorted([(IMPACT_SEVERITY_ORDER.get(c, 0), c) for c in
             self.consequences], reverse=True)[0][1]
         return self._top_consequence
 
@@ -244,8 +244,8 @@ class Effect(object):
         if self.polyphen_value > other.polyphen_value:
             return True
 
-        return max(IMPACT_SEVERITY_ORDER[c] for c in self.consequences) <= \
-                        max(IMPACT_SEVERITY_ORDER[co] for co in other.consequences)
+        return max(IMPACT_SEVERITY_ORDER.get(c, 0) for c in self.consequences) <= \
+                        max(IMPACT_SEVERITY_ORDER.get(co, 0) for co in other.consequences)
 
     @classmethod
     def top_severity(cls, effects):
