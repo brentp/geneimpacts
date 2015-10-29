@@ -543,9 +543,8 @@ class OldSnpEff(SnpEff):
         try:
             return [old_snpeff_effect_so.get(c, old_snpeff_effect_so[c.upper()]) for c in it.chain.from_iterable(x.split("+") for x in
                 self.effects['Effect'].split('&'))]
-        except KeyError:
+        except KeyError, e:
             return list(it.chain.from_iterable(x.split("+") for x in self.effects['Effect'].split('&')))
-
 
     @property
     def severity(self, lookup={'HIGH': 3, 'MED': 2, 'LOW': 1}):
@@ -554,7 +553,7 @@ class OldSnpEff(SnpEff):
             return max(lookup[old_snpeff_lookup[csq]] for csq in self.consequences)
         except KeyError:
             #in between
-            sevs = [IMPACT_SEVERITY[csq] for csq in self.consequences]
+            sevs = [IMPACT_SEVERITY.get(csq, "LOW") for csq in self.consequences]
             return max(lookup[s] for s in sevs)
 
     @property
@@ -607,3 +606,4 @@ if __name__ == "__main__":
     #print s.is_pseudogene
     #s = SnpEff("G|missense_variant|MODERATE|OR4F5|ENSG00000186092|transcript|ENST00000335137|protein_coding|1/1|c.338T>G|p.Phe113Cys|338/918|338/918|113/305||")
     #print s.coding, s.consequence, s.aa_change
+    print s.effects
