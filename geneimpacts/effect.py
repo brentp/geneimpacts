@@ -206,6 +206,10 @@ class Effect(object):
         return self._top_consequence
 
     @property
+    def so(self):
+        return self.top_consequence
+
+    @property
     def is_coding(self):
         return self.biotype == "protein_coding" and self.is_exonic and ("_UTR_" not in self.top_consequence)
 
@@ -395,10 +399,6 @@ class SnpEff(Effect):
     def codon_change(self):
         return self.effects['HGVS.c']
 
-    @property
-    def so(self):
-        return self.effects['Annotation']
-
     sift = None
     sift_value = None
     sift_class = None
@@ -443,10 +443,6 @@ class VEP(Effect):
     @property
     def exon(self):
         return self.effects['EXON']
-
-    @property
-    def so(self):
-        return self.effects['Consequence']
 
     @property
     def consequences(self):
@@ -599,16 +595,6 @@ class OldSnpEff(SnpEff):
             return int(self.effects["Amino_Acid_length"])
         except ValueError:
             return None
-
-    @property
-    def so(self):
-        e = self.effects["Effect"]
-        if "+" in e:
-            e = e.split('+')[0]
-        try:
-            return old_snpeff_effect_so[e]
-        except:
-            return e
 
 
 if __name__ == "__main__":
