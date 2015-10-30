@@ -27,7 +27,7 @@ setup(version=get_version(),
       zip_safe=False,
       test_suite='nose.collector',
       include_package_data=True,
-      tests_require='nose',
+      tests_require=['nose'],
       classifiers=[
     'Development Status :: 4 - Beta',
     'Intended Audience :: Science/Research',

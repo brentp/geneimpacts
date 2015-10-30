@@ -42,7 +42,7 @@ def test_vep():
 def test_veps():
 
     f = os.path.join(HERE, "vep-csqs.txt.gz")
-    with gzip.open(f) as veps:
+    with gzip.open(f, "rt") as veps:
         for csq in (VEP(l.strip()) for l in veps):
             assert csq.severity in (1, 2, 3)
             assert csq.is_pseudogene in (True, False)
@@ -53,7 +53,7 @@ def test_veps():
 
 def test_snpeffs():
     f = os.path.join(HERE, "snpeff-anns.txt.gz")
-    with gzip.open(f) as anns:
+    with gzip.open(f, "rt") as anns:
         for csq in (SnpEff(l.strip()) for l in anns):
             assert csq.severity in (1, 2, 3)
             assert csq.is_pseudogene in (True, False)
@@ -132,7 +132,6 @@ def test_eff_splice():
 
     keys = [x.strip() for x in "Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Gene_BioType |  Coding | Transcript | Exon  | ERRORS | WARNINGS".split("|")]
     e = OldSnpEff("SPLICE_SITE_REGION+SYNONYMOUS_CODING(LOW|SILENT|acG/acA|T245|1134|ANKS1A|protein_coding|CODING|ENST00000360359|5|A)", keys)
-    print e.effects
     assert e.aa_change == "T245"
     assert e.is_coding, e.is_coding
     # note that we choose synonymous coding over splice_site_region
@@ -145,7 +144,6 @@ def test_eff_splice():
 
 def test_regr():
     keys = [x.strip() for x in 'Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Transcript_BioType | Gene_Coding | Transcript_ID | Exon_Rank  | Genotype_Number  | ERRORS | WARNINGS'.split("|")]
-    print keys
     v = OldSnpEff('SPLICE_SITE_REGION+SYNONYMOUS_CODING(LOW|SILENT|acG/acA|T245|1134|ANKS1A|protein_coding|CODING|ENST00000360359|5|A)', keys)
     assert v.consequences == ['splice_region_variant', 'synonymous_variant'], v.consequences
     assert v.severity == 1, v.severity

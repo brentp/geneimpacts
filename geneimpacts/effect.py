@@ -1,6 +1,11 @@
 from functools import total_ordering
 import re
 import itertools as it
+try:
+    izip = it.izip
+except AttributeError:
+    izip = zip
+    basestring = str
 
 old_snpeff_effect_so = {'CDS': 'coding_sequence_variant',
                'CODON_CHANGE': 'coding_sequence_variant',
@@ -237,11 +242,11 @@ class Effect(object):
             return True
 
         # sift higher == more damaing
-        if self.sift_value < other.sift_value:
+        if (self.sift_value or 10000) < (other.sift_value or 10000):
             return True
 
         # polyphen, lower == more damaging
-        if self.polyphen_value > other.polyphen_value:
+        if (self.polyphen_value or -10000) > (other.polyphen_value or -10000):
             return True
 
         return max(IMPACT_SEVERITY_ORDER.get(c, 0) for c in self.consequences) <= \
@@ -336,7 +341,7 @@ class SnpEff(Effect):
         self.effect_string = effect_string
         if keys is not None:
             self.keys = keys
-        self.effects = dict(it.izip(self.keys, (x.strip() for x in effect_string.split("|", len(self.keys)))))
+        self.effects = dict(izip(self.keys, (x.strip() for x in effect_string.split("|", len(self.keys)))))
 
     @property
     def gene(self):
@@ -414,7 +419,7 @@ class VEP(Effect):
         if keys is not None: self.keys = keys
 
         self.effect_string = effect_string
-        self.effects = dict(it.izip(self.keys, (x.strip() for x in effect_string.split("|"))))
+        self.effects = dict(izip(self.keys, (x.strip() for x in effect_string.split("|"))))
 
     @property
     def gene(self):
@@ -522,7 +527,7 @@ class OldSnpEff(SnpEff):
         self.effect_string = effect_string
         if keys is not None:
             self.keys = keys
-        self.effects = dict(it.izip(self.keys, (x.strip() for x in _patt.split(effect_string))))
+        self.effects = dict(izip(self.keys, (x.strip() for x in _patt.split(effect_string))))
 
     @property
     def biotype(self):
@@ -544,7 +549,7 @@ class OldSnpEff(SnpEff):
         try:
             return [old_snpeff_effect_so.get(c, old_snpeff_effect_so[c.upper()]) for c in it.chain.from_iterable(x.split("+") for x in
                 self.effects['Effect'].split('&'))]
-        except KeyError, e:
+        except KeyError:
             return list(it.chain.from_iterable(x.split("+") for x in self.effects['Effect'].split('&')))
 
     @property
@@ -615,4 +620,4 @@ if __name__ == "__main__":
     #print s.is_pseudogene
     #s = SnpEff("G|missense_variant|MODERATE|OR4F5|ENSG00000186092|transcript|ENST00000335137|protein_coding|1/1|c.338T>G|p.Phe113Cys|338/918|338/918|113/305||")
     #print s.coding, s.consequence, s.aa_change
-    print s.effects
+    print(s.effects)
