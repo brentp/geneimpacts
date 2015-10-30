@@ -1,5 +1,7 @@
 Given multiple snpEff or VEP annotations for a single variant, get an orderable python object for each annotation.
 
+[![Build Status](https://travis-ci.org/brentp/geneimpacts.svg?branch=master)](https://travis-ci.org/brentp/geneimpacts)
+
 This is to provide a consistent interface to
 different variant annotations such as from [snpEff ANN field](http://snpeff.sourceforge.net/) and the [VEP CSQ field](http://www.ensembl.org/info/docs/tools/vep/index.html).
 
