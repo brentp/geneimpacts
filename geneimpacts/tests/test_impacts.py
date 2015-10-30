@@ -165,9 +165,14 @@ def test_aa_change():
     ann = SnpEff('C|missense_variant|MODERATE|C1orf170|ENSG00000187642|transcript|ENST00000433179|protein_coding|3/5|c.1252A>G|p.Ser418Gly|1252/3064|1252/2091|418/696||')
     assert ann.aa_change == 'p.Ser418Gly'
 
-def test_so():
+def test_old():
     keys = [x.strip() for x in 'Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Transcript_BioType | Gene_Coding | Transcript_ID | Exon_Rank  | Genotype_Number  | ERRORS | WARNINGS'.split("|")]
     v = OldSnpEff('SPLICE_SITE_REGION+SYNONYMOUS_CODING(LOW|SILENT|acG/acA|T245|1134|ANKS1A|protein_coding|CODING|ENST00000360359|5|A)', keys)
     assert v.so == "synonymous_variant", v.so
     v = OldSnpEff('SYNONYMOUS_CODING+SPLICE_SITE_REGION(LOW|SILENT|acG/acA|T245|1134|ANKS1A|protein_coding|CODING|ENST00000360359|5|A)', keys)
     assert v.so == "synonymous_variant", v.so
+    assert v.aa_length == 1134, v.aa_length
+    assert v.exon == "5", v.exon
+    assert v.codon_change == "acG/acA", v.codon_change
+    assert v.transcript == "ENST00000360359"
+

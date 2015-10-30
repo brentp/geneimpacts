@@ -577,9 +577,10 @@ class OldSnpEff(SnpEff):
 
     @property
     def codon_change(self):
-        if any(c in ("UPSTREAM", "DOWNSTREAM") for c in self.consequences):
+        try:
             return self.effects["Codon_Change"]
-        return None
+        except KeyError:
+            return None
 
     @property
     def aa_change(self):
@@ -595,15 +596,3 @@ class OldSnpEff(SnpEff):
             return int(self.effects["Amino_Acid_length"])
         except ValueError:
             return None
-
-
-if __name__ == "__main__":
-
-    s = SnpEff("A|stop_gained|HIGH|C1orf170|ENSG00000187642|transcript|ENST00000433179|protein_coding|3/5|c.262C>T|p.Arg88*|262/3064|262/2091|88/696||")
-    #print s.effects
-    #print s.gene, s.transcript, s.consequence, s.is_pseudogene
-    s = SnpEff("G|splice_donor_variant&intron_variant|HIGH|WASH7P|ENSG00000227232|transcript|ENST00000423562|unprocessed_pseudogene|6/9|n.822+2T>C||||||")
-    #print s.is_pseudogene
-    #s = SnpEff("G|missense_variant|MODERATE|OR4F5|ENSG00000186092|transcript|ENST00000335137|protein_coding|1/1|c.338T>G|p.Phe113Cys|338/918|338/918|113/305||")
-    #print s.coding, s.consequence, s.aa_change
-    print(s.effects)
