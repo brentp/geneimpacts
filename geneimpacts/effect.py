@@ -189,9 +189,14 @@ EXONIC_IMPACTS = frozenset(["stop_gained",
 class Effect(object):
     _top_consequence = None
 
-    def __init__(self, effect_dict):
-        # or maybe arg should be a dict for Effect()
-        raise NotImplementedError
+    def __init__(self, key, effect_dict, keys):
+        raise NotImplemented
+
+    @classmethod
+    def new(self, key, effect_dict, keys):
+        lookup = {"CSQ": VEP, "ANN": SnpEff, "EFF": OldSnpEff}
+        assert key in lookup
+        return lookup[key](effect_dict, keys)
 
     @property
     def is_exonic(self):
@@ -331,7 +336,7 @@ class Effect(object):
 
     @property
     def is_pseudogene(self): #bool
-        return 'pseudogene' in self.biotype
+        return self.biotype is not None and 'pseudogene' in self.biotype
 
 class SnpEff(Effect):
 
@@ -423,7 +428,10 @@ class VEP(Effect):
 
     @property
     def gene(self):
-        return self.effects['SYMBOL'] or self.effects['Gene'] or None
+        if 'SYMBOL' in self.effects:
+            return self.effects['SYMBOL'] or self.effects['Gene'] or None
+        if 'HGNC' in self.effects:
+            return self.effects['HGNC']
 
     @property
     def codon_change(self):
@@ -450,7 +458,10 @@ class VEP(Effect):
 
     @property
     def biotype(self):
-        return self.effects['BIOTYPE']
+        try:
+            return self.effects['BIOTYPE']
+        except KeyError:
+            return None
 
     @property
     def alt(self):
