@@ -453,8 +453,13 @@ class VEP(Effect):
         return self.effects['EXON']
 
     @property
-    def consequences(self):
-        return list(it.chain.from_iterable(x.split("+") for x in self.effects['Consequence'].split('&')))
+    def consequences(self, _cache={}):
+        try:
+            # this is a bottleneck so we keep a cache
+            return _cache[self.effects['Consequence']]
+        except KeyError:
+            res =_cache[self.effects['Consequence']] = list(it.chain.from_iterable(x.split("+") for x in self.effects['Consequence'].split('&')))
+            return res
 
     @property
     def biotype(self):
