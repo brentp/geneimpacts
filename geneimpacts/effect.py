@@ -224,7 +224,7 @@ class Effect(object):
 
     @property
     def is_lof(self):
-        return self.impact_severity == "HIGH" and self.biotype == "protein_coding"
+        return self.biotype == "protein_coding" and self.impact_severity == "HIGH"
 
     def __le__(self, other):
         if self.is_pseudogene and not other.is_pseudogene:
@@ -307,7 +307,7 @@ class Effect(object):
 
     @property
     def lof(self):
-        return self.impact_severity == "HIGH" and self.biotype == "protein_coding"
+        return self.biotype == "protein_coding" and self.impact_severity == "HIGH"
 
     @property
     def aa_change(self):
@@ -331,10 +331,6 @@ class Effect(object):
         return self.top_consequence
 
     @property
-    def biotype(self):
-        raise NotImplementedError
-
-    @property
     def is_pseudogene(self): #bool
         return self.biotype is not None and 'pseudogene' in self.biotype
 
@@ -351,6 +347,7 @@ class SnpEff(Effect):
         if keys is not None:
             self.keys = keys
         self.effects = dict(izip(self.keys, (x.strip() for x in effect_string.split("|", len(self.keys)))))
+        self.biotype = self.effects['Transcript_BioType']
 
     @property
     def gene(self):
@@ -367,10 +364,6 @@ class SnpEff(Effect):
     @property
     def consequences(self):
         return list(it.chain.from_iterable(x.split("+") for x in self.effects['Annotation'].split('&')))
-
-    @property
-    def biotype(self):
-        return self.effects['Transcript_BioType']
 
     @property
     def alt(self):
@@ -425,6 +418,7 @@ class VEP(Effect):
 
         self.effect_string = effect_string
         self.effects = dict(izip(self.keys, (x.strip() for x in effect_string.split("|"))))
+        self.biotype = self.effects.get('BIOTYPE', None)
 
     @property
     def gene(self):
@@ -461,12 +455,6 @@ class VEP(Effect):
             res =_cache[self.effects['Consequence']] = list(it.chain.from_iterable(x.split("+") for x in self.effects['Consequence'].split('&')))
             return res
 
-    @property
-    def biotype(self):
-        try:
-            return self.effects['BIOTYPE']
-        except KeyError:
-            return None
 
     @property
     def alt(self):
@@ -479,7 +467,7 @@ class VEP(Effect):
 
     @property
     def exonic(self):
-        return any(csq in EXONIC_IMPACTS for csq in self.consequences) and self.biotype == 'protein_coding'
+        return self.biotype == "protein_coding" and any(csq in EXONIC_IMPACTS for csq in self.consequences)
 
     @property
     def sift(self):
@@ -582,7 +570,7 @@ class OldSnpEff(SnpEff):
 
     @property
     def is_lof(self):
-        return self.impact_severity == "HIGH" and self.biotype == "protein_coding"
+        return self.biotype == "protein_coding" and self.impact_severity == "HIGH"
 
     @property
     def exon(self):
