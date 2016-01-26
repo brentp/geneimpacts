@@ -339,7 +339,7 @@ class Effect(object):
 
 class SnpEff(Effect):
 
-    __slots__ = ('effects', 'effect_string')
+    __slots__ = ('effects', 'effect_string', 'biotype', 'keys')
 
     keys = [x.strip() for x in 'Allele | Annotation | Annotation_Impact | Gene_Name | Gene_ID | Feature_Type | Feature_ID | Transcript_BioType | Rank | HGVS.c | HGVS.p | cDNA.pos / cDNA.length | CDS.pos / CDS.length | AA.pos / AA.length | Distance | ERRORS / WARNINGS / INFO'.split("|")]
 
@@ -412,6 +412,7 @@ class SnpEff(Effect):
     sift_score = None
 
 class VEP(Effect):
+    __slots__ = ('keys', 'effect_string', 'effects', 'biotype')
     keys = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE".split("|")
     def __init__(self, effect_string, keys=None, checks=True):
         if checks:
