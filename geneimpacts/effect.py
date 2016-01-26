@@ -227,14 +227,17 @@ class Effect(object):
         return self.biotype == "protein_coding" and self.impact_severity == "HIGH"
 
     def __le__(self, other):
-        if self.is_pseudogene and not other.is_pseudogene:
+        spg = self.is_pseudogene
+        opg = other.is_pseudogene
+        if spg and not opg:
             return True
-        elif other.is_pseudogene and not self.is_pseudogene:
+        elif opg and not spg:
             return False
 
-        if self.coding and not other.coding:
+        sc, oc = self.coding, other.coding
+        if sc and not oc:
             return False
-        elif other.coding and not self.coding:
+        elif oc and not sc:
             return True
 
         if self.severity != other.severity:
@@ -410,9 +413,10 @@ class SnpEff(Effect):
 
 class VEP(Effect):
     keys = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE".split("|")
-    def __init__(self, effect_string, keys=None):
-        assert not "," in effect_string
-        assert not "=" in effect_string
+    def __init__(self, effect_string, keys=None, checks=True):
+        if checks:
+            assert not "," in effect_string
+            assert not "=" in effect_string
         self.effect_string = effect_string
         if keys is not None: self.keys = keys
 
