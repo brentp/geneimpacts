@@ -113,13 +113,13 @@ IMPACT_SEVERITY = [
     ('regulatory_region_ablation', 'MED'), # VEP
 
     ('5_prime_UTR_truncation', 'MED'), # found in snpEff
+    ('splice_region_variant', 'MED'), # VEP changed to have medium priority
 
     ('3_prime_UTR_truncation', 'LOW'), # found in snpEff
     ('non_canonical_start_codon', 'LOW'), # found in snpEff
 
     ('synonymous_variant', 'LOW'), # VEP
     ('coding_sequence_variant', 'LOW'), # VEP
-    ('splice_region_variant', 'LOW'), # VEP
     ('incomplete_terminal_codon_variant', 'LOW'), # VEP
     ('stop_retained_variant', 'LOW'), # VEP
     ('mature_miRNA_variant', 'LOW'), # VEP
@@ -227,18 +227,31 @@ class Effect(object):
         return self.biotype == "protein_coding" and self.impact_severity == "HIGH"
 
     def __le__(self, other):
+        # we sort so that the effects with the highest impacts come last
+        # (highest) and so, we:
+        # + return true if self has lower impact than other.
+        # + return false if self has higher impact than other.
+        self_has_lower_impact = True
+        self_has_higher_impact = False
+
         spg = self.is_pseudogene
         opg = other.is_pseudogene
         if spg and not opg:
-            return True
+            return self_has_lower_impact
         elif opg and not spg:
-            return False
+            return self_has_higher_impact
 
         sc, oc = self.coding, other.coding
         if sc and not oc:
-            return False
+            # other is not coding. is is splicing?
+            # if other is splicing, we have lower impact.
+            if not (self.is_splicing or other.is_splicing):
+                return self_has_higher_impact
         elif oc and not sc:
-            return True
+            # self. is not coding. is it splicing?
+            # if self is splicing it has higher impact
+            if not (self.is_splicing or other.is_splicing):
+                return self_has_lower_impact
 
         if self.severity != other.severity:
             return self.severity <= other.severity

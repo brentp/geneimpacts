@@ -6,6 +6,11 @@ from geneimpacts import SnpEff, VEP, Effect, OldSnpEff
 
 HERE = os.path.dirname(__file__)
 
+def test_bug():
+    e = sorted([VEP('missense_variant|tTt/tGt|F/C|ENSG00000186092|OR4F5|ENST00000335137|1/1|possibly_damaging(0.568)|deleterious(0)|113/305|protein_coding'),
+          VEP("splice_region_variant&non_coding_exon_variant&nc_transcript_variant|||ENSG00000223972|DDX11L1|ENST00000456328|2/3||||processed_transcript")])
+    assert e[-1].so == 'missense_variant', e[-1].so
+
 def test_snpeff():
 
     ann = SnpEff("C|splice_donor_variant&splice_region_variant&splice_region_variant&intron_variant|HIGH|DDX11L1|ENSG00000223972|transcript|ENST00000518655|transcribed_unprocessed_pseudogene|3/3|n.734+2_734+3delAG||||||")
@@ -74,6 +79,7 @@ EFFECTS = [VEP("upstream_gene_variant|||ENSG00000223972|DDX11L1|ENST00000456328|
            ]
 
 
+
 def test_order():
 
     effects = sorted(EFFECTS)
@@ -110,8 +116,9 @@ def test_highest():
     effects = sorted(EFFECTS)
 
     top = Effect.top_severity(effects)
-    assert isinstance(top, Effect)
     assert top.impact_severity == "MED"
+    assert top.so == "missense_variant"
+    #assert top[0].
 
 
     effects.append(effects[-1])
@@ -133,10 +140,10 @@ def test_eff_splice():
     keys = [x.strip() for x in "Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Gene_BioType |  Coding | Transcript | Exon  | ERRORS | WARNINGS".split("|")]
     e = OldSnpEff("SPLICE_SITE_REGION+SYNONYMOUS_CODING(LOW|SILENT|acG/acA|T245|1134|ANKS1A|protein_coding|CODING|ENST00000360359|5|A)", keys)
     assert e.aa_change == "T245"
-    assert e.is_coding, e.is_coding
-    # note that we choose synonymous coding over splice_site_region
+    # note that we choose splice_site_region over synonymous coding
+    assert e.is_splicing, e.is_splicing
 
-    assert not e.is_splicing
+    assert not e.is_coding
 
     e = OldSnpEff("intergenic_region(MODIFIER|||n.null_nulldelAAGGAAGG|||||||A",
             keys)
@@ -146,7 +153,7 @@ def test_regr():
     keys = [x.strip() for x in 'Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Transcript_BioType | Gene_Coding | Transcript_ID | Exon_Rank  | Genotype_Number  | ERRORS | WARNINGS'.split("|")]
     v = OldSnpEff('SPLICE_SITE_REGION+SYNONYMOUS_CODING(LOW|SILENT|acG/acA|T245|1134|ANKS1A|protein_coding|CODING|ENST00000360359|5|A)', keys)
     assert v.consequences == ['splice_region_variant', 'synonymous_variant'], v.consequences
-    assert v.severity == 1, v.severity
+    assert v.severity == 2, v.severity
     assert v.aa_change == 'T245'
     v = OldSnpEff('UPSTREAM(MODIFIER||2771|||PSMB1|processed_transcript|CODING|ENST00000462957||C)', keys)
     assert v.consequences == ['upstream_gene_variant'], v.consequences
@@ -168,11 +175,15 @@ def test_aa_change():
 def test_old():
     keys = [x.strip() for x in 'Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Transcript_BioType | Gene_Coding | Transcript_ID | Exon_Rank  | Genotype_Number  | ERRORS | WARNINGS'.split("|")]
     v = OldSnpEff('SPLICE_SITE_REGION+SYNONYMOUS_CODING(LOW|SILENT|acG/acA|T245|1134|ANKS1A|protein_coding|CODING|ENST00000360359|5|A)', keys)
-    assert v.so == "synonymous_variant", v.so
+    assert v.so == "splice_region_variant", v.so
     v = OldSnpEff('SYNONYMOUS_CODING+SPLICE_SITE_REGION(LOW|SILENT|acG/acA|T245|1134|ANKS1A|protein_coding|CODING|ENST00000360359|5|A)', keys)
-    assert v.so == "synonymous_variant", v.so
+    assert v.so == "splice_region_variant", v.so
     assert v.aa_length == 1134, v.aa_length
     assert v.exon == "5", v.exon
     assert v.codon_change == "acG/acA", v.codon_change
     assert v.transcript == "ENST00000360359"
 
+def test_old2():
+    keys = [x.strip() for x in 'Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Transcript_BioType | Gene_Coding | Transcript_ID | Exon_Rank  | Genotype_Number  | ERRORS | WARNINGS'.split("|")]
+    v = OldSnpEff('SPLICE_SITE_REGION+NON_SYNONYMOUS_CODING(LOW|SILENT|acG/acA|T245|1134|ANKS1A|protein_coding|CODING|ENST00000360359|5|A)', keys)
+    assert v.so == "missense_variant", v.so
