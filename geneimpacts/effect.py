@@ -1,3 +1,5 @@
+import sys
+
 from functools import total_ordering
 import re
 import itertools as it
@@ -158,6 +160,10 @@ IMPACT_SEVERITY = [
     ('non_coding_transcript_variant', 'LOW'), # snpEff
     ('transcript', 'LOW'),  # ? snpEff older
     ('sequence_feature', 'LOW'), # snpEff older
+
+
+    ('?', 'UNKNOWN'),  # some VEP annotations have '?'
+    ('', 'UNKNOWN'),  # some VEP annotations have ''
 
 ]
 
@@ -334,9 +340,14 @@ class Effect(object):
         raise NotImplementedError
 
     @property
-    def severity(self, lookup={'HIGH': 3, 'MED': 2, 'LOW': 1}, sev=IMPACT_SEVERITY):
+    def severity(self, lookup={'HIGH': 3, 'MED': 2, 'LOW': 1, 'UNKNOWN': 0}, sev=IMPACT_SEVERITY):
         # higher is more severe. used for ordering.
-        return max(lookup[IMPACT_SEVERITY[csq]] for csq in self.consequences)
+        v = max(lookup[sev[csq]] for csq in self.consequences)
+        if v == 0:
+            sys.stderr.write("unknown severity for '%s'. using LOW\n" %
+                    self.effect_string)
+            v = 1
+        return v
 
     @property
     def impact_severity(self):
@@ -470,7 +481,7 @@ class VEP(Effect):
             # this is a bottleneck so we keep a cache
             return _cache[self.effects['Consequence']]
         except KeyError:
-            res =_cache[self.effects['Consequence']] = list(it.chain.from_iterable(x.split("+") for x in self.effects['Consequence'].split('&')))
+            res = _cache[self.effects['Consequence']] = list(it.chain.from_iterable(x.split("+") for x in self.effects['Consequence'].split('&')))
             return res
 
 

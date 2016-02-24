@@ -187,3 +187,22 @@ def test_old2():
     keys = [x.strip() for x in 'Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Transcript_BioType | Gene_Coding | Transcript_ID | Exon_Rank  | Genotype_Number  | ERRORS | WARNINGS'.split("|")]
     v = OldSnpEff('SPLICE_SITE_REGION+NON_SYNONYMOUS_CODING(LOW|SILENT|acG/acA|T245|1134|ANKS1A|protein_coding|CODING|ENST00000360359|5|A)', keys)
     assert v.so == "missense_variant", v.so
+
+def test_weird_vep():
+    keys = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE|CANONICAL|CCDS|RadialSVM_score|RadialSVM_pred|LR_score|LR_pred|CADD_raw|CADD_phred|Reliability_index".split("|")
+
+    csqs = ["?|||117581|TWIST2|NM_001271893.1|1/1||||protein_coding|YES||||||||,non_coding_transcript_exon_variant&non_coding_transcript_variant|||117581|TWIST2|NM_001271893.1_dupl8|1/1||||mRNA|||||||||",
+            "non_coding_transcript_exon_variant&non_coding_transcript_variant|||117581|TWIST2|NM_001271893.1_dupl8|1/1||||mRNA|||||||||,?|||117581|TWIST2|NM_001271893.1|1/1||||protein_coding|YES||||||||",
+"?|||115286|SLC25A26|NM_173471.3|1/1||||protein_coding|YES||||||||",
+
+    "|||ENSG00000138190|EXOC6|ENST00000260762||||-/804|protein_coding,|||ENSG00000138190|EXOC6|ENST00000371547||||-/820|protein_coding,|||ENSG00000138190|EXOC6|ENST00000443748||||-/701|protein_coding,NMD_transcript_variant|||ENSG00000138190|EXOC6|ENST00000495132||||-/404|nonsense_mediated_decay,|||ENSG00000138190|EXOC6|ENST00000371552||||-/799|protein_coding",
+    "|||ENSG00000013503|POLR3B|ENST00000539066||||-/1075|protein_coding,nc_transcript_variant|||ENSG00000013503|POLR3B|ENST00000549195|||||processed_transcript,|||ENSG00000013503|POLR3B|ENST00000549569||||-/170|protein_coding,|||ENSG00000013503|POLR3B|ENST00000228347||||-/1133|",
+    "|||ENSG00000147202|DIAPH2|ENST00000373054||||-/1097|protein_coding,|||ENSG00000147202|DIAPH2|ENST00000355827||||-/1096|protein_coding,|||ENSG00000147202|DIAPH2|ENST00000324765||||-/1101|protein_coding,|||ENSG00000147202|DIAPH2|ENST00000373049||||-/1096|protein_coding,|||ENSG00000147202|DIAPH2|ENST00000373061||||-/1101|protein_coding",
+
+]
+    import sys
+    for cs in csqs:
+        for c in cs.split(","):
+            v = VEP(c, keys)
+            assert v.impact_severity in ('LOW', 'MEDIUM', 'HIGH')
+
