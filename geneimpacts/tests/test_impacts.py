@@ -206,3 +206,10 @@ def test_weird_vep():
             v = VEP(c, keys)
             assert v.impact_severity in ('LOW', 'MEDIUM', 'HIGH')
 
+def test_empty_snpeff():
+
+    keys = [x.strip() for x in 'Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Transcript_BioType | Gene_Coding | Transcript_ID | Exon_Rank  | Genotype_Number  | ERRORS | WARNINGS'.split("|")]
+
+    eff = "(MODIFIER||||||||||A|ERROR_CHROMOSOME_NOT_FOUND)"
+    v = OldSnpEff(eff, keys)
+    assert v.impact_severity == "LOW", v.impact_severity

@@ -164,6 +164,8 @@ IMPACT_SEVERITY = [
 
     ('?', 'UNKNOWN'),  # some VEP annotations have '?'
     ('', 'UNKNOWN'),  # some VEP annotations have ''
+    ('UNKNOWN', 'UNKNOWN'),  # some snpEFF annotations have 'unknown'
+
 
 ]
 
@@ -587,10 +589,25 @@ class OldSnpEff(SnpEff):
         try:
             return max(lookup[old_snpeff_lookup[csq]] for csq in self.consequences)
         except KeyError:
-            #in between
-            sevs = [IMPACT_SEVERITY.get(csq, "LOW") for csq in self.consequences]
-            return max(lookup[s] for s in sevs)
+            try:
+                #in between
+                sevs = [IMPACT_SEVERITY.get(csq, "LOW") for csq in self.consequences]
+                return max(lookup[s] for s in sevs)
+            except KeyError:
+                return Effect.severity.fget(self)
 
+
+    """
+    @property
+    def severity(self, lookup={'HIGH': 3, 'MED': 2, 'LOW': 1, 'UNKNOWN': 0}, sev=IMPACT_SEVERITY):
+        # higher is more severe. used for ordering.
+        v = max(lookup[sev[csq]] for csq in self.consequences)
+        if v == 0:
+            sys.stderr.write("unknown severity for '%s'. using LOW\n" %
+                    self.effect_string)
+            v = 1
+        return v
+    """
     @property
     def transcript(self):
         if 'Transcript' in self.effects:
