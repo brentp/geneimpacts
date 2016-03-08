@@ -584,7 +584,7 @@ class OldSnpEff(SnpEff):
             return list(it.chain.from_iterable(x.split("+") for x in self.effects['Effect'].split('&')))
 
     @property
-    def severity(self, lookup={'HIGH': 3, 'MED': 2, 'LOW': 1}):
+    def severity(self, lookup={'HIGH': 3, 'MED': 2, 'LOW': 1, 'UNKNOWN': 0}):
         # higher is more severe. used for ordering.
         try:
             return max(lookup[old_snpeff_lookup[csq]] for csq in self.consequences)
