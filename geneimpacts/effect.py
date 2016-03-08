@@ -96,6 +96,7 @@ IMPACT_SEVERITY = [
     ('exon_loss_variant', 'HIGH'), # snpEff
     ('exon_loss', 'HIGH'), # snpEff
     ('rare_amino_acid_variant', 'HIGH'),
+    ('protein_protein_contact', 'HIGH'), # snpEff
     ('splice_acceptor_variant', 'HIGH'), # VEP
     ('splice_donor_variant', 'HIGH'), # VEP
     ('stop_gained', 'HIGH'), # VEP

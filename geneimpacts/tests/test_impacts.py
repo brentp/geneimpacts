@@ -213,3 +213,9 @@ def test_empty_snpeff():
     eff = "(MODIFIER||||||||||A|ERROR_CHROMOSOME_NOT_FOUND)"
     v = OldSnpEff(eff, keys)
     assert v.impact_severity == "LOW", v.impact_severity
+
+def test_protein_contact():
+    ann = SnpEff('C|protein_protein_contact|HIGH|C1orf170|ENSG00000187642|transcript|ENST00000433179|protein_coding|3/5|c.1252A>G|p.Ser418Gly|1252/3064|1252/2091|418/696||')
+    assert ann.impact_severity == "HIGH"
+
+
