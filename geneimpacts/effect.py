@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 
 from functools import total_ordering
@@ -469,6 +470,8 @@ class VEP(Effect):
             return int(self.effects['Protein_position'])
         except ValueError:
             return self.effects['Protein_position']
+        except KeyError:
+            return None
 
     @property
     def transcript(self):
