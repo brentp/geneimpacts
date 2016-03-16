@@ -1,3 +1,3 @@
 from .effect import Effect, SnpEff, VEP, OldSnpEff
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
