@@ -294,6 +294,8 @@ class Effect(object):
 
                 effects[i] = cls(e)
 
+        if len(effects) == 0:
+            return None
         if len(effects) == 1:
             return effects[0]
         effects = sorted(effects)
