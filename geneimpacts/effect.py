@@ -477,11 +477,18 @@ class VEP(Effect):
 
     @property
     def transcript(self):
-        return self.effects['Feature']
+        try:
+            return self.effects['Feature']
+        except KeyError:
+            return None
 
     @property
     def exon(self):
-        return self.effects['EXON']
+        try:
+            return self.effects['EXON']
+        except KeyError:
+            return None
+
 
     @property
     def consequences(self, _cache={}):
@@ -514,14 +521,14 @@ class VEP(Effect):
     def sift_value(self):
         try:
             return float(self.effects['SIFT'].split("(")[1][:-1])
-        except IndexError:
+        except (IndexError, KeyError):
             return None
 
     @property
     def sift_class(self):
         try:
             return self.effects['SIFT'].split("(")[0]
-        except IndexError:
+        except (IndexError, KeyError):
             return None
 
     @property
@@ -532,14 +539,14 @@ class VEP(Effect):
     def polyphen_value(self):
         try:
             return float(self.effects['PolyPhen'].split('(')[1][:-1])
-        except IndexError:
+        except (KeyError, IndexError):
             return None
 
     @property
     def polyphen_class(self):
         try:
             return self.effects['PolyPhen'].split('(')[0]
-        except:
+        except (KeyError, IndexError):
             return None
 
     polyphen_pred = polyphen_class
@@ -650,5 +657,5 @@ class OldSnpEff(SnpEff):
     def aa_length(self):
         try:
             return int(self.effects["Amino_Acid_length"])
-        except ValueError:
+        except (KeyError, ValueError):
             return None
