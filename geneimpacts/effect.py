@@ -98,6 +98,8 @@ IMPACT_SEVERITY = [
     ('exon_loss', 'HIGH'), # snpEff
     ('rare_amino_acid_variant', 'HIGH'),
     ('protein_protein_contact', 'HIGH'), # snpEff
+    ('structural_interaction_variant', 'HIGH'), #snpEff
+    ('feature_fusion', 'HIGH'), #snpEff
     ('splice_acceptor_variant', 'HIGH'), # VEP
     ('splice_donor_variant', 'HIGH'), # VEP
     ('stop_gained', 'HIGH'), # VEP
@@ -108,7 +110,9 @@ IMPACT_SEVERITY = [
 
 
     ('disruptive_inframe_deletion', 'MED'), #snpEff
+    ('conservative_inframe_deletion', 'MED'), #snpEff
     ('disruptive_inframe_insertion', 'MED'), #snpEff
+    ('conservative_inframe_insertion', 'MED'), #snpEff
     ('inframe_insertion', 'MED'), # VEP
     ('inframe_deletion', 'MED'), # VEP
     ('missense_variant', 'MED'), # VEP
