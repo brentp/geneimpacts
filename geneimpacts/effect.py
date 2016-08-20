@@ -100,6 +100,7 @@ IMPACT_SEVERITY = [
     ('protein_protein_contact', 'HIGH'), # snpEff
     ('structural_interaction_variant', 'HIGH'), #snpEff
     ('feature_fusion', 'HIGH'), #snpEff
+    ('bidirectional_gene_fusion', 'HIGH'), #snpEff
     ('splice_acceptor_variant', 'HIGH'), # VEP
     ('splice_donor_variant', 'HIGH'), # VEP
     ('stop_gained', 'HIGH'), # VEP
