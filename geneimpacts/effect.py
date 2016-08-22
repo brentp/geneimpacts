@@ -354,10 +354,14 @@ class Effect(object):
     @property
     def severity(self, lookup={'HIGH': 3, 'MED': 2, 'LOW': 1, 'UNKNOWN': 0}, sev=IMPACT_SEVERITY):
         # higher is more severe. used for ordering.
-        v = max(lookup[sev[csq]] for csq in self.consequences)
+        try:
+            v = max(lookup[sev[csq]] for csq in self.consequences)
+        except KeyError:
+            v = 0
         if v == 0:
-            sys.stderr.write("unknown severity for '%s'. using LOW\n" %
+            sys.stderr.write("WARNING: unknown severity for '%s'. using LOW\n" %
                     self.effect_string)
+            sys.stderr.write("Please report this on github with the effect-string above\n")
             v = 1
         return v
 
