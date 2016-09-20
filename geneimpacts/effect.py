@@ -51,45 +51,42 @@ old_snpeff_effect_so = {'CDS': 'coding_sequence_variant',
                'CHROMOSOME_LARGE_DELETION': 'chromosomal_deletion'}
 
 old_snpeff_lookup = {'CDS': 'LOW',
- 'CHROMOSOME_LARGE_DELETION': 'HIGH',
- 'CODON_CHANGE': 'MED',
- 'CODON_CHANGE_PLUS_CODON_DELETION': 'MED',
- 'CODON_CHANGE_PLUS_CODON_INSERTION': 'MED',
- 'CODON_DELETION': 'MED',
- 'CODON_INSERTION': 'MED',
- 'DOWNSTREAM': 'LOW',
- 'EXON': 'LOW',
- 'EXON_DELETED': 'HIGH',
- 'FRAME_SHIFT': 'HIGH',
- 'GENE': 'LOW',
- 'INTERGENIC': 'LOW',
- 'INTERGENIC_CONSERVED': 'LOW',
- 'INTRAGENIC': 'LOW',
- 'INTRON': 'LOW',
- 'INTRON_CONSERVED': 'LOW',
- 'NONE': 'LOW',
- 'NON_SYNONYMOUS_CODING': 'MED',
- 'NON_SYNONYMOUS_START': 'HIGH',
- 'RARE_AMINO_ACID': 'HIGH',
- 'SPLICE_SITE_ACCEPTOR': 'HIGH',
- 'SPLICE_SITE_DONOR': 'HIGH',
- 'SPLICE_SITE_REGION': 'MED',
- 'START_GAINED': 'LOW',
- 'START_LOST': 'HIGH',
- 'STOP_GAINED': 'HIGH',
- 'STOP_LOST': 'HIGH',
- 'SYNONYMOUS_CODING': 'LOW',
- 'SYNONYMOUS_START': 'LOW',
- 'SYNONYMOUS_STOP': 'LOW',
- 'TRANSCRIPT': 'LOW',
- 'UPSTREAM': 'LOW',
- 'UTR_3_DELETED': 'MED',
- 'UTR_3_PRIME': 'LOW',
- 'UTR_5_DELETED': 'MED',
- 'UTR_5_PRIME': 'LOW'}
-
-
-
+     'CHROMOSOME_LARGE_DELETION': 'HIGH',
+     'CODON_CHANGE': 'MED',
+     'CODON_CHANGE_PLUS_CODON_DELETION': 'MED',
+     'CODON_CHANGE_PLUS_CODON_INSERTION': 'MED',
+     'CODON_DELETION': 'MED',
+     'CODON_INSERTION': 'MED',
+     'DOWNSTREAM': 'LOW',
+     'EXON': 'LOW',
+     'EXON_DELETED': 'HIGH',
+     'FRAME_SHIFT': 'HIGH',
+     'GENE': 'LOW',
+     'INTERGENIC': 'LOW',
+     'INTERGENIC_CONSERVED': 'LOW',
+     'INTRAGENIC': 'LOW',
+     'INTRON': 'LOW',
+     'INTRON_CONSERVED': 'LOW',
+     'NONE': 'LOW',
+     'NON_SYNONYMOUS_CODING': 'MED',
+     'NON_SYNONYMOUS_START': 'HIGH',
+     'RARE_AMINO_ACID': 'HIGH',
+     'SPLICE_SITE_ACCEPTOR': 'HIGH',
+     'SPLICE_SITE_DONOR': 'HIGH',
+     'SPLICE_SITE_REGION': 'MED',
+     'START_GAINED': 'LOW',
+     'START_LOST': 'HIGH',
+     'STOP_GAINED': 'HIGH',
+     'STOP_LOST': 'HIGH',
+     'SYNONYMOUS_CODING': 'LOW',
+     'SYNONYMOUS_START': 'LOW',
+     'SYNONYMOUS_STOP': 'LOW',
+     'TRANSCRIPT': 'LOW',
+     'UPSTREAM': 'LOW',
+     'UTR_3_DELETED': 'MED',
+     'UTR_3_PRIME': 'LOW',
+     'UTR_5_DELETED': 'MED',
+     'UTR_5_PRIME': 'LOW'}
 # http://uswest.ensembl.org/info/genome/variation/predicted_data.html#consequences
 IMPACT_SEVERITY = [
     ('chromosome_number_variation', 'HIGH'), # snpEff
@@ -201,9 +198,85 @@ EXONIC_IMPACTS = frozenset(["stop_gained",
                             "feature_truncation"])
 
 
+def snpeff_aa_length(self):
+    try:
+        v = self.effects['AA.pos / AA.length']
+        if v.strip():
+            return int(v.split("/")[1].strip())
+    except:
+        try:
+            return int(self.effects['Amino_Acid_length'])
+        except:
+            return None
+
+def vep_aa_length(self):
+    if not 'Protein_position' in self.effects:
+        return None
+    try:
+        return int(self.effects['Protein_position'])
+    except ValueError:
+        try:
+            return self.effects['Protein_position']
+        except KeyError:
+            return None
+
+def vep_polyphen_pred(self):
+    try:
+        return self.effects['PolyPhen'].split('(')[0]
+    except (KeyError, IndexError):
+        return None
+
+def vep_polyphen_score(self):
+    try:
+        return float(self.effects['PolyPhen'].split('(')[1][:-1])
+    except (KeyError, IndexError):
+        return None
+
+def vep_sift_score(self):
+    try:
+        return float(self.effects['SIFT'].split("(")[1][:-1])
+    except (IndexError, KeyError):
+        return None
+
+def vep_sift_pred(self):
+    try:
+        return self.effects['SIFT'].split("(")[0]
+    except (IndexError, KeyError):
+        return None
+
+snpeff_lookup = {
+    'transcript': ['Feature_ID', 'Transcript_ID', 'Transcript'],
+    'gene': 'Gene_Name',
+    'exon': ['Rank', 'Exon', 'Exon_Rank'],
+    'codon_change': ['HGVS.c', 'Codon_Change'],
+    'aa_change': ['HGVS.p', 'Amino_Acid_Change', 'Amino_Acid_change'],
+    'aa_length': snpeff_aa_length,
+    'biotype': ['Transcript_BioType', 'Gene_BioType'],
+    'alt': 'Allele',
+        }
+
+vep_lookup = {
+    'transcript': 'Feature',
+    'gene': ['SYMBOL', 'HGNC', 'Gene'],
+    'exon': 'EXON',
+    'codon_change': 'codons',
+    'aa_change': 'Amino_acids',
+    'aa_length': vep_aa_length,
+    'biotype': 'BIOTYPE',
+    'polyphen_pred': vep_polyphen_pred,
+    'polyphen_score': vep_polyphen_score,
+    'sift_pred': vep_sift_pred,
+    'sift_score': vep_sift_score,
+    'alt': 'ALLELE',
+        }
+
+# lookup here instead of returning ''.
+defaults = {'gene': None}
+
 @total_ordering
 class Effect(object):
     _top_consequence = None
+    lookup = None
 
     def __init__(self, key, effect_dict, keys):
         raise NotImplemented
@@ -332,24 +405,8 @@ class Effect(object):
         return self.impact_severity
 
     @property
-    def gene(self):
-        raise NotImplementedError
-
-    @property
-    def transcript(self):
-        raise NotImplementedError
-
-    @property
     def lof(self):
         return self.biotype == "protein_coding" and self.impact_severity == "HIGH"
-
-    @property
-    def aa_change(self):
-        raise NotImplementedError
-
-    @property
-    def codon_change(self):
-        raise NotImplementedError
 
     @property
     def severity(self, lookup={'HIGH': 3, 'MED': 2, 'LOW': 1, 'UNKNOWN': 0}, sev=IMPACT_SEVERITY):
@@ -377,7 +434,64 @@ class Effect(object):
     def is_pseudogene(self): #bool
         return self.biotype is not None and 'pseudogene' in self.biotype
 
+
+    def __getattr__(self, k):
+        v = self.lookup.get(k)
+        if v is None: return v
+        if isinstance(v, basestring):
+            ret = self.effects.get(v)
+            # if we didnt get value, there may be a column
+            # specific value stored in defaults so we look import
+            # up.
+            if not ret and ret is not False:
+                return defaults.get(k, '')
+            return ret
+        elif isinstance(v, list):
+            for key in v:
+                try:
+                    return self.effects[key]
+                except KeyError:
+                    continue
+            return defaults.get(k, '')
+        return v(self)
+
+class VEP(Effect):
+    __slots__ = ('effect_string', 'effects', 'biotype')
+    keys = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE".split("|")
+    lookup = vep_lookup
+
+    def __init__(self, effect_string, keys=None, checks=True):
+        if checks:
+            assert not "," in effect_string
+            assert not "=" in effect_string
+        self.effect_string = effect_string
+        if keys is not None: self.keys = keys
+
+        self.effect_string = effect_string
+        self.effects = dict(izip(self.keys, (x.strip() for x in effect_string.split("|"))))
+        self.biotype = self.effects.get('BIOTYPE', None)
+
+    @property
+    def consequences(self, _cache={}):
+        try:
+            # this is a bottleneck so we keep a cache
+            return _cache[self.effects['Consequence']]
+        except KeyError:
+            res = _cache[self.effects['Consequence']] = list(it.chain.from_iterable(x.split("+") for x in self.effects['Consequence'].split('&')))
+            return res
+
+    @property
+    def coding(self):
+        # what about start/stop_gained?
+        return self.exonic and any(csq[1:] != "_prime_UTR_variant" for csq in self.consequences)
+
+    @property
+    def exonic(self):
+        return self.biotype == "protein_coding" and any(csq in EXONIC_IMPACTS for csq in self.consequences)
+
+
 class SnpEff(Effect):
+    lookup = snpeff_lookup
 
     __slots__ = ('effects', 'effect_string', 'biotype')
 
@@ -393,24 +507,8 @@ class SnpEff(Effect):
         self.biotype = self.effects['Transcript_BioType']
 
     @property
-    def gene(self):
-        return self.effects['Gene_Name'] or None
-
-    @property
-    def transcript(self):
-        return self.effects['Feature_ID'] or None
-
-    @property
-    def exon(self):
-        return self.effects['Rank']
-
-    @property
     def consequences(self):
         return list(it.chain.from_iterable(x.split("+") for x in self.effects['Annotation'].split('&')))
-
-    @property
-    def alt(self):
-        return self.effects['Allele']
 
     @property
     def coding(self):
@@ -425,150 +523,6 @@ class SnpEff(Effect):
             csqs = [csqs]
         return any(csq in EXONIC_IMPACTS for csq in csqs) and self.effects['Transcript_BioType'] == 'protein_coding'
 
-    @property
-    def aa_change(self):
-        if 'HGVS.p' in self.effects:
-            return self.effects['HGVS.p']
-
-    @property
-    def aa_length(self):
-        v = self.effects['AA.pos / AA.length']
-        if v.strip():
-            return int(v.split("/")[1].strip())
-
-    @property
-    def codon_change(self):
-        return self.effects['HGVS.c']
-
-    sift = None
-    sift_value = None
-    sift_class = None
-    polyphen = None
-    polyphen_value = None
-    polyphen_class = None
-    polyphen_pred = None
-    polyphen_score = None
-    sift_pred = None
-    sift_score = None
-
-class VEP(Effect):
-    __slots__ = ('effect_string', 'effects', 'biotype')
-    keys = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE".split("|")
-    def __init__(self, effect_string, keys=None, checks=True):
-        if checks:
-            assert not "," in effect_string
-            assert not "=" in effect_string
-        self.effect_string = effect_string
-        if keys is not None: self.keys = keys
-
-        self.effect_string = effect_string
-        self.effects = dict(izip(self.keys, (x.strip() for x in effect_string.split("|"))))
-        self.biotype = self.effects.get('BIOTYPE', None)
-
-    @property
-    def gene(self):
-        if 'SYMBOL' in self.effects:
-            return self.effects['SYMBOL'] or self.effects['Gene'] or None
-        if 'HGNC' in self.effects:
-            return self.effects['HGNC']
-
-    @property
-    def codon_change(self):
-        return self.effects['Codons']
-
-    @property
-    def aa_length(self):
-        try:
-            return int(self.effects['Protein_position'])
-        except ValueError:
-            return self.effects['Protein_position']
-        except KeyError:
-            return None
-
-    @property
-    def transcript(self):
-        try:
-            return self.effects['Feature']
-        except KeyError:
-            return None
-
-    @property
-    def exon(self):
-        try:
-            return self.effects['EXON']
-        except KeyError:
-            return None
-
-
-    @property
-    def consequences(self, _cache={}):
-        try:
-            # this is a bottleneck so we keep a cache
-            return _cache[self.effects['Consequence']]
-        except KeyError:
-            res = _cache[self.effects['Consequence']] = list(it.chain.from_iterable(x.split("+") for x in self.effects['Consequence'].split('&')))
-            return res
-
-
-    @property
-    def alt(self):
-        return self.effects.get('ALLELE')
-
-    @property
-    def coding(self):
-        # what about start/stop_gained?
-        return self.exonic and any(csq[1:] != "_prime_UTR_variant" for csq in self.consequences)
-
-    @property
-    def exonic(self):
-        return self.biotype == "protein_coding" and any(csq in EXONIC_IMPACTS for csq in self.consequences)
-
-    @property
-    def sift(self):
-        return self.effects['SIFT']
-
-    @property
-    def sift_value(self):
-        try:
-            return float(self.effects['SIFT'].split("(")[1][:-1])
-        except (IndexError, KeyError):
-            return None
-
-    @property
-    def sift_class(self):
-        try:
-            return self.effects['SIFT'].split("(")[0]
-        except (IndexError, KeyError):
-            return None
-
-    @property
-    def polyphen(self):
-        return self.effects['PolyPhen']
-
-    @property
-    def polyphen_value(self):
-        try:
-            return float(self.effects['PolyPhen'].split('(')[1][:-1])
-        except (KeyError, IndexError):
-            return None
-
-    @property
-    def polyphen_class(self):
-        try:
-            return self.effects['PolyPhen'].split('(')[0]
-        except (KeyError, IndexError):
-            return None
-
-    polyphen_pred = polyphen_class
-    polyphen_score = polyphen_value
-    sift_pred = sift_class
-    sift_score = sift_value
-
-
-    @property
-    def aa_change(self):
-        return self.effects['Amino_acids']
-
 
 class OldSnpEff(SnpEff):
 
@@ -582,15 +536,6 @@ class OldSnpEff(SnpEff):
         if keys is not None:
             self.keys = keys
         self.effects = dict(izip(self.keys, (x.strip() for x in _patt.split(effect_string))))
-
-    @property
-    def biotype(self):
-        if 'Gene_BioType' in self.effects:
-            return self.effects['Gene_BioType']
-        if 'Transcript_BioType' in self.effects:
-            return self.effects['Transcript_BioType']
-        return self.effects['Transcript_BioType']
-
 
     @property
     def consequence(self):
@@ -619,53 +564,6 @@ class OldSnpEff(SnpEff):
             except KeyError:
                 return Effect.severity.fget(self)
 
-
-    """
-    @property
-    def severity(self, lookup={'HIGH': 3, 'MED': 2, 'LOW': 1, 'UNKNOWN': 0}, sev=IMPACT_SEVERITY):
-        # higher is more severe. used for ordering.
-        v = max(lookup[sev[csq]] for csq in self.consequences)
-        if v == 0:
-            sys.stderr.write("unknown severity for '%s'. using LOW\n" %
-                    self.effect_string)
-            v = 1
-        return v
-    """
-    @property
-    def transcript(self):
-        if 'Transcript' in self.effects:
-            return self.effects['Transcript'] or None
-        return self.effects['Transcript_ID']
-
     @property
     def is_lof(self):
         return self.biotype == "protein_coding" and self.impact_severity == "HIGH"
-
-    @property
-    def exon(self):
-        try:
-            return self.effects['Exon']
-        except:
-            return self.effects['Exon_Rank']
-
-    @property
-    def codon_change(self):
-        try:
-            return self.effects["Codon_Change"]
-        except KeyError:
-            return None
-
-    @property
-    def aa_change(self):
-        # different versions of SnpEff have different capitalizations
-        if 'Amino_Acid_change' in self.effects:
-            return self.effects['Amino_Acid_change']
-        elif 'Amino_Acid_Change' in self.effects:
-            return self.effects['Amino_Acid_Change']
-
-    @property
-    def aa_length(self):
-        try:
-            return int(self.effects["Amino_Acid_length"])
-        except (KeyError, ValueError):
-            return None

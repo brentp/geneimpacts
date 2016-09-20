@@ -38,10 +38,10 @@ def test_vep():
     assert ann.severity == 2
     assert ann.impact_severity == "MED", ann.impact_severity
     assert not ann.is_pseudogene
-    assert ann.polyphen_value == 0.568, ann.polyphen
-    assert ann.polyphen_class == "possibly_damaging", ann.polyphen
-    assert ann.sift_value == 0.0, ann.sift
-    assert ann.sift_class == "deleterious", ann.sift
+    assert ann.polyphen_score == 0.568, ann.polyphen
+    assert ann.polyphen_pred == "possibly_damaging", ann.polyphen
+    assert ann.sift_score == 0.0, ann.sift
+    assert ann.sift_pred == "deleterious", ann.sift
 
 
 def test_veps():
@@ -93,8 +93,7 @@ def test_o2():
     effects = [OldSnpEff(v, keys) for v in "DOWNSTREAM(MODIFIER|||||RP5-902P8.10|processed_transcript|NON_CODING|ENST00000434139|),DOWNSTREAM(MODIFIER|||||RP5-902P8.10|processed_transcript|NON_CODING|ENST00000453732|),INTRON(MODIFIER||||138|SCNN1D|protein_coding|CODING|ENST00000470022|3),INTRON(MODIFIER||||638|SCNN1D|protein_coding|CODING|ENST00000338555|3),INTRON(MODIFIER||||638|SCNN1D|protein_coding|CODING|ENST00000400928|2),INTRON(MODIFIER||||669|SCNN1D|protein_coding|CODING|ENST00000379110|6),INTRON(MODIFIER||||704|SCNN1D|protein_coding|CODING|ENST00000325425|2),INTRON(MODIFIER||||802|SCNN1D|protein_coding|CODING|ENST00000379116|5),INTRON(MODIFIER|||||SCNN1D|nonsense_mediated_decay|CODING|ENST00000379101|5),INTRON(MODIFIER|||||SCNN1D|processed_transcript|CODING|ENST00000467651|3)".split(",")]
 
     effects = sorted(effects)
-    assert effects[-1].gene == "SCNN1D"
-
+    assert effects[-1].gene == "SCNN1D", effects[-1].gene
 
     effects = sorted([OldSnpEff(v, keys) for v in "DOWNSTREAM(MODIFIER||||85|FAM138A|protein_coding|CODING|ENST00000417324|),DOWNSTREAM(MODIFIER|||||FAM138A|processed_transcript|CODING|ENST00000461467|),DOWNSTREAM(MODIFIER|||||MIR1302-10|miRNA|NON_CODING|ENST00000408384|),EXON(MODIFIER|||||MIR1302-10|antisense|NON_CODING|ENST00000469289|1),INTRON(MODIFIER|||||MIR1302-10|antisense|NON_CODING|ENST00000473358|1),UPSTREAM(MODIFIER|||||WASH7P|unprocessed_pseudogene|NON_CODING|ENST00000423562|),UPSTREAM(MODIFIER|||||WASH7P|unprocessed_pseudogene|NON_CODING|ENST00000430492|),UPSTREAM(MODIFIER|||||WASH7P|unprocessed_pseudogene|NON_CODING|ENST00000438504|),UPSTREAM(MODIFIER|||||WASH7P|unprocessed_pseudogene|NON_CODING|ENST00000488147|),UPSTREAM(MODIFIER|||||WASH7P|unprocessed_pseudogene|NON_CODING|ENST00000538476|)".split(",")])
     s = "\n".join(e.effect_string for e in effects[::-1])
@@ -181,7 +180,7 @@ def test_old():
     assert v.aa_length == 1134, v.aa_length
     assert v.exon == "5", v.exon
     assert v.codon_change == "acG/acA", v.codon_change
-    assert v.transcript == "ENST00000360359"
+    assert v.transcript == "ENST00000360359", v.transcript
 
 def test_old2():
     keys = [x.strip() for x in 'Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Transcript_BioType | Gene_Coding | Transcript_ID | Exon_Rank  | Genotype_Number  | ERRORS | WARNINGS'.split("|")]
