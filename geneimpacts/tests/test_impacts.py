@@ -26,6 +26,12 @@ def test_snpeff():
     assert not ann.coding
     assert ann.is_pseudogene
 
+def test_unused():
+    extra = ['XXX', 'YYY']
+    keys = VEP.keys + extra
+    ann = VEP('missense_variant|tTt/tGt|F/C|ENSG00000186092|OR4F5|ENST00000335137|1/1|possibly_damaging(0.568)|deleterious(0)|113/305|protein_coding', keys=keys)
+    assert ann.unused() == extra, ann.unused()
+
 def test_vep():
 
     ann = VEP('missense_variant|tTt/tGt|F/C|ENSG00000186092|OR4F5|ENST00000335137|1/1|possibly_damaging(0.568)|deleterious(0)|113/305|protein_coding')

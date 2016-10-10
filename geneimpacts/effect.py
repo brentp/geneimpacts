@@ -291,6 +291,9 @@ class Effect(object):
     def is_exonic(self):
         return self.top_consequence in EXONIC_IMPACTS
 
+    def unused(self):
+        return []
+
     @property
     def top_consequence(self):
         # sort by order and return the top
@@ -479,6 +482,10 @@ class VEP(Effect):
         except KeyError:
             res = _cache[self.effects['Consequence']] = list(it.chain.from_iterable(x.split("+") for x in self.effects['Consequence'].split('&')))
             return res
+
+    def unused(self, used=frozenset("Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE".lower().split("|"))):
+        """Return fields that were in the VCF but weren't utilized as part of the standard fields supported here."""
+        return [k for k in self.keys if not k.lower() in used]
 
     @property
     def coding(self):
