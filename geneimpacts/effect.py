@@ -244,6 +244,18 @@ def vep_sift_pred(self):
     except (IndexError, KeyError):
         return None
 
+def vep_float_field(self, key=None):
+    try:
+        return float(self.effects[key].split("&")[0])
+    except (ValueError, IndexError, KeyError):
+        return None
+    
+def vep_text_field(self, key=None):
+    try:
+        return self.effects[key].split("&")[0]
+    except (IndexError, KeyError):
+        return None
+
 snpeff_lookup = {
     'transcript': ['Feature_ID', 'Transcript_ID', 'Transcript'],
     'gene': 'Gene_Name',
@@ -263,10 +275,26 @@ vep_lookup = {
     'aa_change': 'Amino_acids',
     'aa_length': vep_aa_length,
     'biotype': 'BIOTYPE',
+    'domains': 'DOMAINS',
     'polyphen_pred': vep_polyphen_pred,
     'polyphen_score': vep_polyphen_score,
     'sift_pred': vep_sift_pred,
     'sift_score': vep_sift_score,
+    'cadd_phred': lambda self: vep_float_field(self,key='CADD_phred'),
+    'fathmmmkl_score': lambda self: vep_float_field(self,key='fathmm-MKL_coding_score'),
+    'fathmmmkl_pred': lambda self: vep_text_field(self,key='fathmm-MKL_coding_pred'),
+    'mutationassessor_score': lambda self: vep_float_field(self,key='MutationAssessor_score'),
+    'mutationassessor_pred': lambda self: vep_text_field(self,key='MutationAssessor_pred'),
+    'mutationtaster_score': lambda self: vep_float_field(self,key='MutationTaster_score'),
+    'mutationtaster_pred': lambda self: vep_text_field(self,key='MutationTaster_pred'),
+    'metasvm_score': lambda self: vep_float_field(self,key='MetaSVM_score'),
+    'metasvm_pred': lambda self: vep_text_field(self,key='MetaSVM_pred'),
+    'metalr_score': lambda self: vep_float_field(self,key='MetaLR_score'),
+    'metalr_pred': lambda self: vep_text_field(self,key='MetaLR_pred'),
+    'provean_score': lambda self: vep_float_field(self,key='PROVEAN_score'),
+    'provean_pred': lambda self: vep_text_field(self,key='PROVEAN_pred'),
+    'phastCons100way_vertebrate': lambda self: vep_float_field(self,key='phastCons100way_vertebrate'),
+    'phyloP100way_vertebrate': lambda self: vep_float_field(self,key='phyloP100way_vertebrate'),
     'alt': 'ALLELE',
         }
 
@@ -460,7 +488,8 @@ class Effect(object):
 
 class VEP(Effect):
     __slots__ = ('effect_string', 'effects', 'biotype')
-    keys = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE".split("|")
+    
+    keys = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|DOMAINS|PolyPhen|SIFT|CADD_phred|MetaLR_pred|MetaLR_score|MetaSVM_pred|MetaSVM_score|MutationAssessor_pred|MutationAssessor_score|MutationTaster_pred|MutationTaster_score|PROVEAN_pred|PROVEAN_score|fathmm-MKL_coding_pred|fathmm-MKL_coding_score|phastCons100way_vertebrate|phyloP100way_vertebrate|Protein_position|BIOTYPE".split("|")
     lookup = vep_lookup
 
     def __init__(self, effect_string, keys=None, checks=True):
@@ -483,7 +512,7 @@ class VEP(Effect):
             res = _cache[self.effects['Consequence']] = list(it.chain.from_iterable(x.split("+") for x in self.effects['Consequence'].split('&')))
             return res
 
-    def unused(self, used=frozenset("Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE".lower().split("|"))):
+    def unused(self, used=frozenset("Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|DOMAINS|PolyPhen|SIFT|CADD_phred|MetaLR_pred|MetaLR_score|MetaSVM_pred|MetaSVM_score|MutationAssessor_pred|MutationAssessor_score|MutationTaster_pred|MutationTaster_score|PROVEAN_pred|PROVEAN_score|fathmm-MKL_coding_pred|fathmm-MKL_coding_score|phastCons100way_vertebrate|phyloP100way_vertebrate|Protein_position|BIOTYPE".lower().split("|"))):
         """Return fields that were in the VCF but weren't utilized as part of the standard fields supported here."""
         return [k for k in self.keys if not k.lower() in used]
 
@@ -574,3 +603,4 @@ class OldSnpEff(SnpEff):
     @property
     def is_lof(self):
         return self.biotype == "protein_coding" and self.impact_severity == "HIGH"
+
