@@ -293,8 +293,8 @@ vep_lookup = {
     'metalr_pred': lambda self: vep_text_field(self,key='MetaLR_pred'),
     'provean_score': lambda self: vep_float_field(self,key='PROVEAN_score'),
     'provean_pred': lambda self: vep_text_field(self,key='PROVEAN_pred'),
-    'phastCons100way_vertebrate': lambda self: vep_float_field(self,key='phastCons100way_vertebrate'),
-    'phyloP100way_vertebrate': lambda self: vep_float_field(self,key='phyloP100way_vertebrate'),
+    'phastcons100way_vertebrate': lambda self: vep_float_field(self,key='phastCons100way_vertebrate'),
+    'phylop100way_vertebrate': lambda self: vep_float_field(self,key='phyloP100way_vertebrate'),
     'alt': 'ALLELE',
         }
 
