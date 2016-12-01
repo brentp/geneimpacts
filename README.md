@@ -1,9 +1,10 @@
-Given multiple snpEff or VEP annotations for a single variant, get an orderable python object for each annotation.
+Given multiple snpEff or VEP or BCFTools consequence annotations for a single variant, get an orderable python object for each annotation.
 
 [![Build Status](https://travis-ci.org/brentp/geneimpacts.svg?branch=master)](https://travis-ci.org/brentp/geneimpacts)
 
 This is to provide a consistent interface to
 different variant annotations such as from [snpEff ANN field](http://snpeff.sourceforge.net/) and the [VEP CSQ field](http://www.ensembl.org/info/docs/tools/vep/index.html).
+and the [BCFTools consequence field](http://biorxiv.org/content/early/2016/12/01/090811)
 
 This will be used in [gemini](http://gemini.rtfd.org/) but should also be of
 general utility.
@@ -11,7 +12,7 @@ general utility.
 Design
 ======
 
-There is an effect base-class and then a sub-class for `snpEff` and one for `VEP`
+There is an effect base-class and then a sub-class for `snpEff`, one for `VEP`, and one for `BCFT`
 
 `Effect` objects are orderable (via \_\_le\_\_ ) and should have an \_\_eq\_\_ method so that we can use [functools.total_ordering](https://docs.python.org/2/library/functools.html#functools.total_ordering) to provide the other comparison operators.
 

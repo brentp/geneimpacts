@@ -1,7 +1,7 @@
 import sys
 import os
 import gzip
-from geneimpacts import SnpEff, VEP, Effect, OldSnpEff
+from geneimpacts import SnpEff, VEP, Effect, OldSnpEff, BCFT
 
 
 HERE = os.path.dirname(__file__)
@@ -29,8 +29,12 @@ def test_snpeff():
 def test_unused():
     extra = ['XXX', 'YYY']
     keys = VEP.keys + extra
-    ann = VEP('missense_variant|tTt/tGt|F/C|ENSG00000186092|OR4F5|ENST00000335137|1/1|possibly_damaging(0.568)|deleterious(0)|113/305|protein_coding', keys=keys)
+    ann = VEP('missense_variant|tTt/tGt|F/C|ENSG00000186092|OR4F5|ENST00000335137|1/1|possibly_damaging(0.568)|deleterious(0)|113/305|protein_coding|xval|yval', keys=keys)
     assert ann.unused() == extra, ann.unused()
+
+    assert ann.effects['XXX'] == 'xval'
+
+
 
 def test_vep():
 
@@ -48,6 +52,16 @@ def test_vep():
     assert ann.polyphen_pred == "possibly_damaging", ann.polyphen
     assert ann.sift_score == 0.0, ann.sift
     assert ann.sift_pred == "deleterious", ann.sift
+
+
+def test_bcfts():
+    f = os.path.join(HERE, "bcfts.txt.gz")
+    with gzip.open(f, "rt") as fh:
+        for csq in (BCFT(l.rstrip()) for l in fh):
+            assert csq.severity in (1, 2, 3)
+            assert csq.is_pseudogene in (True, False)
+            assert csq.coding in (True, False), (csq.coding, csq)
+            assert csq.is_exonic in (True, False)
 
 
 def test_veps():
