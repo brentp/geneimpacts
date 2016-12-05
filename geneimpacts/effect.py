@@ -473,7 +473,7 @@ class Effect(object):
 
 class BCFT(Effect):
     __slots__ = ('effect_string', 'effects', 'biotype', 'gene', 'transcript', 'aa_change', 'dna_change')
-    keys = "csq,gene,transcript,biotype,strand,aa_change,dna_change".split(",")
+    keys = "consequence,gene,transcript,biotype,strand,amino_acid_change,dna_change".split(",")
     lookup = bcft_lookup
 
     def __init__(self, effect_string, keys=None):
@@ -483,11 +483,8 @@ class BCFT(Effect):
         self.biotype = self.effects.get('biotype', None)
         self.transcript = self.effects.get('transcript', None)
         self.gene = self.effects.get('gene', None)
-        self.aa_change = self.effects.get('aa_change', None)
-
-    @property
-    def consequences(self):
-        return self.effects['csq'].split('&')
+        self.aa_change = self.effects.get('amino_acid_change', None)
+        self.consequences = self.effects[self.keys[0]].split('&')
 
     def unused(self, used=frozenset("csq|gene|transcript|biotype|strand|aa_change|dna_change".lower().split("|"))):
         """Return fields that were in the VCF but weren't utilized as part of the standard fields supported here."""
