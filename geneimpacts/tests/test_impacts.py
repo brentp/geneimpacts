@@ -238,3 +238,7 @@ def test_protein_contact():
     assert ann.impact_severity == "HIGH"
 
 
+def test_bug_vcf2db_21():
+	ann = VEP('synonymous_variant|tcA/tcG|S|ENSG00000186092|OR4F5|ENST00000335137|1/1|||60/305|protein_coding||Low_complexity_(Seg):seg&Transmembrane_helices:TMhelix&Prints_domain:PR00237&Superfamily_domains:SSF81321&Gene3D:1.20.1070.10&hmmpanther:PTHR26451&hmmpanther:PTHR26451:SF72&PROSITE_profiles:PS50262||||ENST00000335137.3:c.180A>G|ENST00000335137.3:c.180A>G(p.%3D)|||-0.817044|0.039', keys="Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE|CANONICAL|DOMAINS|CLIN_SIG".split("|"))
+
+	assert ann.codon_change == "tcA/tcG", ann.codon_change

@@ -272,7 +272,7 @@ vep_lookup = {
     'transcript': 'Feature',
     'gene': ['SYMBOL', 'HGNC', 'Gene'],
     'exon': 'EXON',
-    'codon_change': 'codons',
+    'codon_change': 'Codons',
     'aa_change': 'Amino_acids',
     'aa_length': vep_aa_length,
     'biotype': 'BIOTYPE',
