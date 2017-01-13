@@ -165,38 +165,49 @@ IMPACT_SEVERITY = [
     ('non_coding_transcript_variant', 'LOW'), # snpEff
     ('transcript', 'LOW'),  # ? snpEff older
     ('sequence_feature', 'LOW'), # snpEff older
+    ('non_coding', 'LOW'), # BCSQ
 
 
     ('?', 'UNKNOWN'),  # some VEP annotations have '?'
     ('', 'UNKNOWN'),  # some VEP annotations have ''
     ('UNKNOWN', 'UNKNOWN'),  # some snpEFF annotations have 'unknown'
-
-
 ]
+
+# bcftools doesn't add _variant on the end.
+for (csq, imp) in list(IMPACT_SEVERITY[::-1]):
+    if csq.endswith('_variant'):
+        for i, (a, b) in enumerate(IMPACT_SEVERITY):
+            if (a, b) == (csq, imp):
+                IMPACT_SEVERITY.insert(i, (csq[:-8].lower(), imp))
+                break
 
 IMPACT_SEVERITY_ORDER = dict((x[0], i) for i, x in enumerate(IMPACT_SEVERITY[::-1]))
 IMPACT_SEVERITY = dict(IMPACT_SEVERITY)
 
-EXONIC_IMPACTS = frozenset(["stop_gained",
-                            "exon_variant",
-                            "stop_lost",
-                            "frameshift_variant",
-                            "initiator_codon_variant",
-                            "inframe_deletion",
-                            "inframe_insertion",
-                            "missense_variant",
-                            "incomplete_terminal_codon_variant",
-                            "stop_retained_variant",
-                            "5_prime_UTR_premature_start_codon_variant",
-                            "synonymous_variant",
-                            "coding_sequence_variant",
-                            "5_prime_UTR_variant",
-                            "3_prime_UTR_variant",
-                            "transcript_ablation",
-                            "transcript_amplification",
-                            "feature_elongation",
-                            "feature_truncation"])
+EXONIC_IMPACTS = set(["stop_gained",
+                      "exon_variant",
+                      "stop_lost",
+                      "frameshift_variant",
+                      "initiator_codon_variant",
+                      "inframe_deletion",
+                      "inframe_insertion",
+                      "missense_variant",
+                      "incomplete_terminal_codon_variant",
+                      "stop_retained_variant",
+                      "5_prime_UTR_premature_start_codon_variant",
+                      "synonymous_variant",
+                      "coding_sequence_variant",
+                      "5_prime_UTR_variant",
+                      "3_prime_UTR_variant",
+                      "transcript_ablation",
+                      "transcript_amplification",
+                      "feature_elongation",
+                      "feature_truncation"])
 
+for im in list(EXONIC_IMPACTS):
+    if im.endswith("_variant"):
+        EXONIC_IMPACTS.add(im[:-8])
+EXONIC_IMPACTS = frozenset(EXONIC_IMPACTS)
 
 def snpeff_aa_length(self):
     try:
@@ -267,11 +278,13 @@ snpeff_lookup = {
     'alt': 'Allele',
         }
 
+bcft_lookup = {}
+
 vep_lookup = {
     'transcript': 'Feature',
     'gene': ['SYMBOL', 'HGNC', 'Gene'],
     'exon': 'EXON',
-    'codon_change': 'codons',
+    'codon_change': 'Codons',
     'aa_change': 'Amino_acids',
     'aa_length': vep_aa_length,
     'biotype': 'BIOTYPE',
@@ -311,7 +324,7 @@ class Effect(object):
 
     @classmethod
     def new(self, key, effect_dict, keys):
-        lookup = {"CSQ": VEP, "ANN": SnpEff, "EFF": OldSnpEff}
+        lookup = {"CSQ": VEP, "ANN": SnpEff, "EFF": OldSnpEff, "BCSQ": BCFT}
         assert key in lookup
         return lookup[key](effect_dict, keys)
 
@@ -486,6 +499,35 @@ class Effect(object):
             return defaults.get(k, '')
         return v(self)
 
+class BCFT(Effect):
+    __slots__ = ('effect_string', 'effects', 'biotype', 'gene', 'transcript', 'aa_change', 'dna_change')
+    keys = "consequence,gene,transcript,biotype,strand,amino_acid_change,dna_change".split(",")
+    lookup = bcft_lookup
+
+    def __init__(self, effect_string, keys=None):
+        if keys is not None: self.keys = keys
+        self.effect_string = effect_string
+        self.effects = dict(izip(self.keys, (x.strip().replace(' ', '_') for x in effect_string.split("|"))))
+        self.biotype = self.effects.get('biotype', None)
+        self.transcript = self.effects.get('transcript', None)
+        self.gene = self.effects.get('gene', None)
+        self.aa_change = self.effects.get('amino_acid_change', None)
+        self.consequences = self.effects[self.keys[0]].split('&')
+
+    def unused(self, used=frozenset("csq|gene|transcript|biotype|strand|aa_change|dna_change".lower().split("|"))):
+        """Return fields that were in the VCF but weren't utilized as part of the standard fields supported here."""
+        return [k for k in self.keys if not k.lower() in used]
+
+    @property
+    def exonic(self):
+        return self.biotype == "protein_coding" and any(csq in EXONIC_IMPACTS for csq in self.consequences)
+
+    @property
+    def coding(self):
+        # what about start/stop_gained?
+        return self.exonic and any(csq[1:] != "_prime_utr" for csq in self.consequences)
+
+
 class VEP(Effect):
     __slots__ = ('effect_string', 'effects', 'biotype')
     
@@ -502,6 +544,7 @@ class VEP(Effect):
         self.effect_string = effect_string
         self.effects = dict(izip(self.keys, (x.strip() for x in effect_string.split("|"))))
         self.biotype = self.effects.get('BIOTYPE', None)
+
 
     @property
     def consequences(self, _cache={}):
