@@ -237,6 +237,9 @@ def test_protein_contact():
     ann = SnpEff('C|protein_protein_contact|HIGH|C1orf170|ENSG00000187642|transcript|ENST00000433179|protein_coding|3/5|c.1252A>G|p.Ser418Gly|1252/3064|1252/2091|418/696||')
     assert ann.impact_severity == "HIGH"
 
+def test_gemini_issue812():
+    ann = VEP('protein_altering_variant|caGCAGCAGCAGCAGCAACAGCAG/caA|QQQQQQQQ/Q|ENSG00000204842|ATXN2|ENST00000608853|1/25|||14-21/1153|protein_coding|', keys="Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE|CANONICAL".split("|"))
+    assert ann.is_coding
 
 def test_bug_vcf2db_21():
 	ann = VEP('synonymous_variant|tcA/tcG|S|ENSG00000186092|OR4F5|ENST00000335137|1/1|||60/305|protein_coding||Low_complexity_(Seg):seg&Transmembrane_helices:TMhelix&Prints_domain:PR00237&Superfamily_domains:SSF81321&Gene3D:1.20.1070.10&hmmpanther:PTHR26451&hmmpanther:PTHR26451:SF72&PROSITE_profiles:PS50262||||ENST00000335137.3:c.180A>G|ENST00000335137.3:c.180A>G(p.%3D)|||-0.817044|0.039', keys="Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE|CANONICAL|DOMAINS|CLIN_SIG".split("|"))
