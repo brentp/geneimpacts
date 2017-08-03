@@ -99,6 +99,7 @@ IMPACT_SEVERITY = [
     ('feature_fusion', 'HIGH'), #snpEff
     ('bidirectional_gene_fusion', 'HIGH'), #snpEff
     ('gene_fusion', 'HIGH'), #snpEff
+    ('feature_ablation', 'HIGH'), #snpEff, structural varint
     ('splice_acceptor_variant', 'HIGH'), # VEP
     ('splice_donor_variant', 'HIGH'), # VEP
     ('stop_gained', 'HIGH'), # VEP
@@ -112,6 +113,9 @@ IMPACT_SEVERITY = [
     ('conservative_inframe_deletion', 'MED'), #snpEff
     ('disruptive_inframe_insertion', 'MED'), #snpEff
     ('conservative_inframe_insertion', 'MED'), #snpEff
+    ('duplication', 'MED'), # snpEff, structural variant
+    ('inversion', 'MED'), # snpEff, structural variant
+    ('exon_region', 'MED'), # snpEff, structural variant
     ('inframe_insertion', 'MED'), # VEP
     ('inframe_deletion', 'MED'), # VEP
     ('missense_variant', 'MED'), # VEP
@@ -192,6 +196,7 @@ EXONIC_IMPACTS = set(["stop_gained",
                       "inframe_deletion",
                       "inframe_insertion",
                       "missense_variant",
+                      "protein_altering_variant",
                       "incomplete_terminal_codon_variant",
                       "stop_retained_variant",
                       "5_prime_UTR_premature_start_codon_variant",
@@ -460,9 +465,10 @@ class Effect(object):
         except KeyError:
             v = 0
         if v == 0:
-            sys.stderr.write("WARNING: unknown severity for '%s'. using LOW\n" %
-                    self.effect_string)
-            sys.stderr.write("Please report this on github with the effect-string above\n")
+            if [c for c in self.consequences if c]:
+                sys.stderr.write("WARNING: unknown severity for '%s'. using LOW for %s\n" %
+                        (self.effect_string, self.consequences))
+                sys.stderr.write("Please report this on github with the effect-string above\n")
             v = 1
         return v
 
