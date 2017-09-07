@@ -102,6 +102,7 @@ IMPACT_SEVERITY = [
     ('feature_ablation', 'HIGH'), #snpEff, structural varint
     ('splice_acceptor_variant', 'HIGH'), # VEP
     ('splice_donor_variant', 'HIGH'), # VEP
+    ('start_retained_variant', 'HIGH'), # new VEP
     ('stop_gained', 'HIGH'), # VEP
     ('frameshift_variant', 'HIGH'), # VEP
     ('stop_lost', 'HIGH'), # VEP
@@ -437,12 +438,16 @@ class Effect(object):
         except KeyError:
             v = 0
         if v == 0:
-            if [c for c in self.consequences if c]:
-                sys.stderr.write("WARNING: unknown severity for '%s'. using LOW for %s\n" %
-                        (self.effect_string, self.consequences))
+            excl = []
+            for i, c in [(i, c) for i, c in enumerate(self.consequences) if not c in sev]:
+                sys.stderr.write("WARNING: unknown severity for '%s' with effect '%s'\n" % (self.effect_string, c))
                 sys.stderr.write("Please report this on github with the effect-string above\n")
-            v = 1
-        return v
+                excl.append(i)
+            if len(excl) == len(self.consequences):
+                v = 1
+            else:
+                v =  max(lookup[sev[csq]] for i, csq in enumerate(self.consequences) if not i in excl)
+        return max(v, 1)
 
     @property
     def impact_severity(self):
