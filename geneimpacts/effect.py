@@ -345,6 +345,13 @@ class Effect(object):
         self_has_lower_impact = True
         self_has_higher_impact = False
 
+        if self.report_canonical:
+            scanon, ocanon = self.canonical, other.canonical
+            if scanon and not ocanon:
+                return self_has_higher_impact
+            elif ocanon and not scanon:
+                return self_has_lower_impact
+
         spg = self.is_pseudogene
         opg = other.is_pseudogene
         if spg and not opg:
@@ -513,10 +520,10 @@ class BCFT(Effect):
 
 class VEP(Effect):
     __slots__ = ('effect_string', 'effects', 'biotype')
-    keys = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE".split("|")
+    keys = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE|CANONICAL".split("|")
     lookup = vep_lookup
 
-    def __init__(self, effect_string, keys=None, checks=True):
+    def __init__(self, effect_string, keys=None, checks=True, report_canonical=False):
         if checks:
             assert not "," in effect_string
             assert not "=" in effect_string
@@ -526,7 +533,7 @@ class VEP(Effect):
         self.effect_string = effect_string
         self.effects = dict(izip(self.keys, (x.strip() for x in effect_string.split("|"))))
         self.biotype = self.effects.get('BIOTYPE', None)
-
+        self.report_canonical = report_canonical
 
     @property
     def consequences(self, _cache={}):
@@ -537,7 +544,7 @@ class VEP(Effect):
             res = _cache[self.effects['Consequence']] = list(it.chain.from_iterable(x.split("+") for x in self.effects['Consequence'].split('&')))
             return res
 
-    def unused(self, used=frozenset("Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE".lower().split("|"))):
+    def unused(self, used=frozenset("Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE|CANONICAL".lower().split("|"))):
         """Return fields that were in the VCF but weren't utilized as part of the standard fields supported here."""
         return [k for k in self.keys if not k.lower() in used]
 
@@ -550,6 +557,9 @@ class VEP(Effect):
     def exonic(self):
         return self.biotype == "protein_coding" and any(csq in EXONIC_IMPACTS for csq in self.consequences)
 
+    @property
+    def canonical(self):
+        return self.report_canonical and self.effects.get("CANONICAL", None)
 
 class SnpEff(Effect):
     lookup = snpeff_lookup
