@@ -56,7 +56,7 @@ def test_vep():
 
 def test_vep_canonical():
 
-    ann = VEP('missense_variant|tTt/tGt|F/C|ENSG00000186092|OR4F5|ENST00000335137|1/1|possibly_damaging(0.568)|deleterious(0)|113/305|protein_coding|*', report_canonical=True)
+    ann = VEP('missense_variant|tTt/tGt|F/C|ENSG00000186092|OR4F5|ENST00000335137|1/1|possibly_damaging(0.568)|deleterious(0)|113/305|protein_coding|*', prioritize_canonical=True)
     assert ann.gene == 'OR4F5'
     assert ann.transcript == 'ENST00000335137'
     assert ann.aa_change == "F/C", ann.aa_change
@@ -126,7 +126,7 @@ def test_order():
 
 def test_canonical_order():
     effects = EFFECTS[:]
-    effects.append(VEP("intron_variant&nc_transcript_variant|||ENSG00000223972|DDX11L1|ENST00000450305|||||transcribed_unprocessed_pseudogene|*", report_canonical=True))
+    effects.append(VEP("intron_variant&nc_transcript_variant|||ENSG00000223972|DDX11L1|ENST00000450305|||||transcribed_unprocessed_pseudogene|*", prioritize_canonical=True))
     effects = sorted(effects)
     assert effects[-1].canonical
     assert effects[0].impact_severity == "LOW"
