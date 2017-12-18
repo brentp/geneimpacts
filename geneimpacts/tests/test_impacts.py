@@ -27,18 +27,18 @@ def test_snpeff():
     assert ann.is_pseudogene
 
 def test_unused():
-    extra = ['XXX', 'YYY']
+    extra = ['YYY']
     keys = VEP.keys + extra
     ann = VEP('missense_variant|tTt/tGt|F/C|ENSG00000186092|OR4F5|ENST00000335137|1/1|possibly_damaging(0.568)|deleterious(0)|113/305|protein_coding|xval|yval', keys=keys)
     assert ann.unused() == extra, ann.unused()
 
-    assert ann.effects['XXX'] == 'xval'
+    assert ann.effects['YYY'] == 'yval'
 
 
 
 def test_vep():
 
-    ann = VEP('missense_variant|tTt/tGt|F/C|ENSG00000186092|OR4F5|ENST00000335137|1/1|possibly_damaging(0.568)|deleterious(0)|113/305|protein_coding')
+    ann = VEP('missense_variant|tTt/tGt|F/C|ENSG00000186092|OR4F5|ENST00000335137|1/1|possibly_damaging(0.568)|deleterious(0)|113/305|protein_coding|*')
     assert ann.gene == 'OR4F5'
     assert ann.transcript == 'ENST00000335137'
     assert ann.aa_change == "F/C", ann.aa_change
@@ -52,7 +52,25 @@ def test_vep():
     assert ann.polyphen_pred == "possibly_damaging", ann.polyphen
     assert ann.sift_score == 0.0, ann.sift
     assert ann.sift_pred == "deleterious", ann.sift
+    assert not ann.canonical
 
+def test_vep_canonical():
+
+    ann = VEP('missense_variant|tTt/tGt|F/C|ENSG00000186092|OR4F5|ENST00000335137|1/1|possibly_damaging(0.568)|deleterious(0)|113/305|protein_coding|*', prioritize_canonical=True)
+    assert ann.gene == 'OR4F5'
+    assert ann.transcript == 'ENST00000335137'
+    assert ann.aa_change == "F/C", ann.aa_change
+    assert ann.consequences == ['missense_variant']
+    assert ann.coding
+    assert ann.biotype == "protein_coding"
+    assert ann.severity == 2
+    assert ann.impact_severity == "MED", ann.impact_severity
+    assert not ann.is_pseudogene
+    assert ann.polyphen_score == 0.568, ann.polyphen
+    assert ann.polyphen_pred == "possibly_damaging", ann.polyphen
+    assert ann.sift_score == 0.0, ann.sift
+    assert ann.sift_pred == "deleterious", ann.sift
+    assert ann.canonical
 
 def test_bcfts():
     f = os.path.join(HERE, "bcfts.txt.gz")
@@ -105,6 +123,14 @@ def test_order():
     effects = sorted(EFFECTS)
     assert effects[-1].impact_severity == "MED"
     assert effects[0].impact_severity == "LOW"
+
+def test_canonical_order():
+    effects = EFFECTS[:]
+    effects.append(VEP("intron_variant&nc_transcript_variant|||ENSG00000223972|DDX11L1|ENST00000450305|||||transcribed_unprocessed_pseudogene|*", prioritize_canonical=True))
+    effects = sorted(effects)
+    assert effects[-1].canonical
+    assert effects[0].impact_severity == "LOW"
+    assert not effects[0].canonical
 
 def test_o2():
 

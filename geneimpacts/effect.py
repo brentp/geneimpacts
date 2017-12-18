@@ -297,7 +297,7 @@ class Effect(object):
     _top_consequence = None
     lookup = None
 
-    def __init__(self, key, effect_dict, keys):
+    def __init__(self, key, effect_dict, keys, prioritize_canonical):
         raise NotImplemented
 
     @classmethod
@@ -344,6 +344,13 @@ class Effect(object):
         # + return false if self has higher impact than other.
         self_has_lower_impact = True
         self_has_higher_impact = False
+
+        if self.prioritize_canonical:
+            scanon, ocanon = self.canonical, other.canonical
+            if scanon and not ocanon:
+                return self_has_higher_impact
+            elif ocanon and not scanon:
+                return self_has_lower_impact
 
         spg = self.is_pseudogene
         opg = other.is_pseudogene
@@ -487,7 +494,7 @@ class BCFT(Effect):
     keys = "consequence,gene,transcript,biotype,strand,amino_acid_change,dna_change".split(",")
     lookup = bcft_lookup
 
-    def __init__(self, effect_string, keys=None):
+    def __init__(self, effect_string, keys=None, prioritize_canonical=False):
         if keys is not None: self.keys = keys
         self.effect_string = effect_string
         self.effects = dict(izip(self.keys, (x.strip().replace(' ', '_') for x in effect_string.split("|"))))
@@ -513,10 +520,10 @@ class BCFT(Effect):
 
 class VEP(Effect):
     __slots__ = ('effect_string', 'effects', 'biotype')
-    keys = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE".split("|")
+    keys = "Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE|CANONICAL".split("|")
     lookup = vep_lookup
 
-    def __init__(self, effect_string, keys=None, checks=True):
+    def __init__(self, effect_string, keys=None, checks=True, prioritize_canonical=False):
         if checks:
             assert not "," in effect_string
             assert not "=" in effect_string
@@ -526,7 +533,7 @@ class VEP(Effect):
         self.effect_string = effect_string
         self.effects = dict(izip(self.keys, (x.strip() for x in effect_string.split("|"))))
         self.biotype = self.effects.get('BIOTYPE', None)
-
+        self.prioritize_canonical = prioritize_canonical
 
     @property
     def consequences(self, _cache={}):
@@ -537,7 +544,7 @@ class VEP(Effect):
             res = _cache[self.effects['Consequence']] = list(it.chain.from_iterable(x.split("+") for x in self.effects['Consequence'].split('&')))
             return res
 
-    def unused(self, used=frozenset("Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE".lower().split("|"))):
+    def unused(self, used=frozenset("Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE|CANONICAL".lower().split("|"))):
         """Return fields that were in the VCF but weren't utilized as part of the standard fields supported here."""
         return [k for k in self.keys if not k.lower() in used]
 
@@ -550,6 +557,9 @@ class VEP(Effect):
     def exonic(self):
         return self.biotype == "protein_coding" and any(csq in EXONIC_IMPACTS for csq in self.consequences)
 
+    @property
+    def canonical(self):
+        return self.prioritize_canonical and self.effects.get("CANONICAL", None)
 
 class SnpEff(Effect):
     lookup = snpeff_lookup
@@ -558,7 +568,7 @@ class SnpEff(Effect):
 
     keys = [x.strip() for x in 'Allele | Annotation | Annotation_Impact | Gene_Name | Gene_ID | Feature_Type | Feature_ID | Transcript_BioType | Rank | HGVS.c | HGVS.p | cDNA.pos / cDNA.length | CDS.pos / CDS.length | AA.pos / AA.length | Distance | ERRORS / WARNINGS / INFO'.split("|")]
 
-    def __init__(self, effect_string, keys=None):
+    def __init__(self, effect_string, keys=None, prioritize_canonical=False):
         assert not "," in effect_string
         assert not "=" == effect_string[3]
         self.effect_string = effect_string
@@ -589,7 +599,8 @@ class OldSnpEff(SnpEff):
 
     keys = [x.strip() for x in "Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Gene_BioType | Coding | Transcript | Exon  | ERRORS | WARNINGS".split("|")]
 
-    def __init__(self, effect_string, keys=None, _patt=re.compile("\||\(")):
+    def __init__(self, effect_string, keys=None, _patt=re.compile("\||\("),
+                 prioritize_canonical=False):
         assert not "," in effect_string
         assert not "=" in effect_string
         effect_string = effect_string.rstrip(")")
