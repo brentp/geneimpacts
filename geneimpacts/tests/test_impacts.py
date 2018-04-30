@@ -38,7 +38,7 @@ def test_unused():
 
 def test_vep():
 
-    ann = VEP('missense_variant|tTt/tGt|F/C|ENSG00000186092|OR4F5|ENST00000335137|1/1|possibly_damaging(0.568)|deleterious(0)|113/305|protein_coding|*')
+    ann = VEP('missense_variant|tTt/tGt|F/C|ENSG00000186092|OR4F5|ENST00000335137|1/1|possibly_damaging(0.568)|deleterious(0)|113/305|protein_coding|')
     assert ann.gene == 'OR4F5'
     assert ann.transcript == 'ENST00000335137'
     assert ann.aa_change == "F/C", ann.aa_change
@@ -70,7 +70,7 @@ def test_vep_canonical():
     assert ann.polyphen_pred == "possibly_damaging", ann.polyphen
     assert ann.sift_score == 0.0, ann.sift
     assert ann.sift_pred == "deleterious", ann.sift
-    assert ann.canonical
+    assert ann.is_canonical
 
 def test_bcfts():
     f = os.path.join(HERE, "bcfts.txt.gz")
@@ -128,9 +128,9 @@ def test_canonical_order():
     effects = EFFECTS[:]
     effects.append(VEP("intron_variant&nc_transcript_variant|||ENSG00000223972|DDX11L1|ENST00000450305|||||transcribed_unprocessed_pseudogene|*", prioritize_canonical=True))
     effects = sorted(effects)
-    assert effects[-1].canonical
+    assert effects[-1].is_canonical
     assert effects[0].impact_severity == "LOW"
-    assert not effects[0].canonical
+    assert not effects[0].is_canonical
 
 def test_o2():
 
