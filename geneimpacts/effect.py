@@ -346,7 +346,7 @@ class Effect(object):
         self_has_higher_impact = False
 
         if self.prioritize_canonical:
-            scanon, ocanon = self.canonical, other.canonical
+            scanon, ocanon = self.is_canonical, other.is_canonical
             if scanon and not ocanon:
                 return self_has_higher_impact
             elif ocanon and not scanon:
@@ -558,8 +558,8 @@ class VEP(Effect):
         return self.biotype == "protein_coding" and any(csq in EXONIC_IMPACTS for csq in self.consequences)
 
     @property
-    def canonical(self):
-        return self.prioritize_canonical and self.effects.get("CANONICAL", None)
+    def is_canonical(self):
+        return self.effects.get("CANONICAL", False)
 
 class SnpEff(Effect):
     lookup = snpeff_lookup
