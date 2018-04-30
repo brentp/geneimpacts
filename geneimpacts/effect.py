@@ -559,7 +559,7 @@ class VEP(Effect):
 
     @property
     def is_canonical(self):
-        return self.effects.get("CANONICAL", False)
+        return self.effects.get("CANONICAL", "") != "" 
 
 class SnpEff(Effect):
     lookup = snpeff_lookup
