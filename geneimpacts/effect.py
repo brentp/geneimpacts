@@ -277,6 +277,7 @@ bcft_lookup = {}
 vep_lookup = {
     'transcript': 'Feature',
     'gene': ['SYMBOL', 'HGNC', 'Gene'],
+    'ensembl_gene_id': 'Gene',
     'exon': 'EXON',
     'codon_change': 'Codons',
     'aa_change': 'Amino_acids',
