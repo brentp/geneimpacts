@@ -590,7 +590,7 @@ class SnpEff(Effect):
 
     @property
     def exonic(self):
-        csqs = self.consequence
+        csqs = self.consequences
         if isinstance(csqs, basestring):
             csqs = [csqs]
         return any(csq in EXONIC_IMPACTS for csq in csqs) and self.effects['Transcript_BioType'] == 'protein_coding'
