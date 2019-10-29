@@ -479,7 +479,6 @@ class Effect(object):
         try:
             return max(max(lookup[sev[csq]] for csq in self.consequences), 1)
         except KeyError:
-            print('detour')
             ret = 1
             for c in self.consequences:
                 if c in sev:
@@ -493,9 +492,6 @@ class Effect(object):
 
     @property
     def impact_severity(self):
-        print(self.consequences)
-        print(self.severity)
-        print('---')
         return ['xxx', 'LOW', 'MED', 'HIGH'][self.severity]
 
     @property
