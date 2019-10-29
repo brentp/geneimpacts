@@ -191,7 +191,10 @@ IMPACT_SEVERITY = dict(IMPACT_SEVERITY)
 
 EXONIC_IMPACTS = set(["stop_gained",
                       "exon_variant",
+                      "start_lost",
                       "stop_lost",
+                      "start_retained",
+                      "start_retained_variant",
                       "frameshift_variant",
                       "initiator_codon_variant",
                       "inframe_deletion",
