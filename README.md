@@ -18,7 +18,7 @@ There is an effect base-class and then a sub-class for `snpEff`, one for `VEP`, 
 
 Given 2 effects objects, `a` and `b`: `a < b == True` iff the *severity* of `b` is greater than `a`.
 
-We will have a classmethod: `Effect.top_severity([eff1, ... effn]) that will return the single highest serverity if that exists or
+We will have a classmethod: `Effect.top_severity([eff1, ... effn]) that will return the single highest severity if that exists or
 a list of the ties for highest
 
 Rules for severity:
