@@ -475,7 +475,7 @@ class Effect(object):
         if v is None: return v
         if isinstance(v, basestring):
             ret = self.effects.get(v)
-            # if we didnt get value, there may be a column
+            # if we didn't get value, there may be a column
             # specific value stored in defaults so we look import
             # up.
             if not ret and ret is not False:
