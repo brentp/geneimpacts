@@ -37,4 +37,4 @@ severity
 --------
 
 Severity is based on the [impacts from VEP](http://uswest.ensembl.org/info/docs/tools/vep/script/vep_other.html#pick)
-and the [impacts from snpEff](http://snpeff.sourceforge.net/VCFannotationformat_v1.0.pdf). We reduce from the 4 categories HIGH, MEDIUM, LOW, MODIFIER to 3 by renaming MEDIUM to MED and renaming MODIFIER to LOW.
+and the [impacts from snpEff](http://snpeff.sourceforge.net/VCFannotationformat_v1.0.pdf). We reduce from the 4 categories HIGH, MODERATE, LOW, MODIFIER to 3 by renaming MODERATE to MED and renaming MODIFIER to LOW.
