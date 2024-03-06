@@ -125,7 +125,10 @@ IMPACT_SEVERITY = [
     ('regulatory_region_ablation', 'MED'), # VEP
 
     ('5_prime_UTR_truncation', 'MED'), # found in snpEff
+    ('splice_donor_5th_base_variant', 'MED'), # VEP changed to have medium priority
     ('splice_region_variant', 'MED'), # VEP changed to have medium priority
+    ('splice_donor_region_variant', 'MED'), # VEP changed to have medium priority
+    ('splice_polypyrimidine_tract_variant', 'MED'), # VEP changed to have medium priority
 
     ('3_prime_UTR_truncation', 'LOW'), # found in snpEff
     ('non_canonical_start_codon', 'LOW'), # found in snpEff
