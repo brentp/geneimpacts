@@ -194,7 +194,10 @@ IMPACT_SEVERITY = dict(IMPACT_SEVERITY)
 
 EXONIC_IMPACTS = set(["stop_gained",
                       "exon_variant",
+                      "start_lost",
                       "stop_lost",
+                      "start_retained",
+                      "start_retained_variant",
                       "frameshift_variant",
                       "initiator_codon_variant",
                       "inframe_deletion",
@@ -215,8 +218,11 @@ EXONIC_IMPACTS = set(["stop_gained",
 
 for im in list(EXONIC_IMPACTS):
     if im.endswith("_variant"):
-        EXONIC_IMPACTS.add(im[:-8])
+        EXONIC_IMPACTS.add(im[:-8].lower())
 EXONIC_IMPACTS = frozenset(EXONIC_IMPACTS)
+# What about gained start codons?
+# Currently these are not considered coding impacts. Should they?
+CODING_IMPACTS = frozenset(im for im in EXONIC_IMPACTS if '_UTR' not in im)
 
 def snpeff_aa_length(self):
     try:
@@ -298,7 +304,6 @@ defaults = {'gene': None}
 
 @total_ordering
 class Effect(object):
-    _top_consequence = None
     lookup = None
 
     def __init__(self, key, effect_dict, keys, prioritize_canonical):
@@ -310,28 +315,46 @@ class Effect(object):
         assert key in lookup
         return lookup[key](effect_dict, keys)
 
-    @property
-    def is_exonic(self):
-        return self.top_consequence in EXONIC_IMPACTS
+    def parse_consequences(self, csq_string):
+        return list(
+            it.chain.from_iterable(
+                x.split("+") for x in csq_string.split('&')
+            )
+        )
 
     def unused(self):
         return []
 
     @property
-    def top_consequence(self):
-        # sort by order and return the top
-        if self._top_consequence is None:
-            self._top_consequence = sorted([(IMPACT_SEVERITY_ORDER.get(c, 0), c) for c in
-            self.consequences], reverse=True)[0][1]
-        return self._top_consequence
+    def consequences(self, _cache={}):
+        # this is a bottleneck so we keep a cache
+        csq_string = self.effects[self.consequence_key]
+        if csq_string not in _cache:
+            _cache[csq_string] = self.parse_consequences(csq_string)
+        return _cache[csq_string]
+
+    @property
+    def top_consequence(self, _cache={}):
+        # use a cache
+        csq_string = self.effects[self.consequence_key]
+        if csq_string not in _cache:
+            _cache[csq_string] = max(
+                self.consequences,
+                key=lambda c: IMPACT_SEVERITY_ORDER.get(c, 0)
+            )
+        return _cache[csq_string]
 
     @property
     def so(self):
         return self.top_consequence
 
     @property
+    def is_exonic(self):
+        return self.top_consequence in EXONIC_IMPACTS
+
+    @property
     def is_coding(self):
-        return self.biotype == "protein_coding" and self.is_exonic and ("_UTR_" not in self.top_consequence)
+        return self.biotype == "protein_coding" and self.top_consequence in CODING_IMPACTS
 
     @property
     def is_splicing(self):
@@ -339,6 +362,22 @@ class Effect(object):
 
     @property
     def is_lof(self):
+        return self.biotype == "protein_coding" and self.impact_severity == "HIGH"
+
+    @property
+    def exonic(self):
+        return any(csq in EXONIC_IMPACTS for csq in self.consequences)
+
+    @property
+    def coding(self):
+        return self.biotype == "protein_coding" and any(csq in CODING_IMPACTS for csq in self.consequences)
+
+    @property
+    def splicing(self):
+        return any("splice" in csq for csq in self.consequences)
+
+    @property
+    def lof(self):
         return self.biotype == "protein_coding" and self.impact_severity == "HIGH"
 
     def __le__(self, other):
@@ -438,27 +477,21 @@ class Effect(object):
         return self.impact_severity
 
     @property
-    def lof(self):
-        return self.biotype == "protein_coding" and self.impact_severity == "HIGH"
-
-    @property
     def severity(self, lookup={'HIGH': 3, 'MED': 2, 'LOW': 1, 'UNKNOWN': 0}, sev=IMPACT_SEVERITY):
         # higher is more severe. used for ordering.
         try:
-            v = max(lookup[sev[csq]] for csq in self.consequences)
+            return max(max(lookup[sev[csq]] for csq in self.consequences), 1)
         except KeyError:
-            v = 0
-        if v == 0:
-            excl = []
-            for i, c in [(i, c) for i, c in enumerate(self.consequences) if not c in sev]:
-                sys.stderr.write("WARNING: unknown severity for '%s' with effect '%s'\n" % (self.effect_string, c))
-                sys.stderr.write("Please report this on github with the effect-string above\n")
-                excl.append(i)
-            if len(excl) == len(self.consequences):
-                v = 1
-            else:
-                v =  max(lookup[sev[csq]] for i, csq in enumerate(self.consequences) if not i in excl)
-        return max(v, 1)
+            ret = 1
+            for c in self.consequences:
+                if c in sev:
+                    v = lookup[sev[c]]
+                    if v > ret:
+                        ret = v
+                else:
+                    sys.stderr.write("WARNING: unknown severity for '%s' with effect '%s'\n" % (self.effect_string, c))
+                    sys.stderr.write("Please report this on github with the effect-string above\n")
+            return ret
 
     @property
     def impact_severity(self):
@@ -499,27 +532,19 @@ class BCFT(Effect):
     lookup = bcft_lookup
 
     def __init__(self, effect_string, keys=None, prioritize_canonical=False):
-        if keys is not None: self.keys = keys
+        if keys is not None:
+            self.keys = keys
         self.effect_string = effect_string
         self.effects = dict(izip(self.keys, (x.strip().replace(' ', '_') for x in effect_string.split("|"))))
         self.biotype = self.effects.get('biotype', None)
         self.transcript = self.effects.get('transcript', None)
         self.gene = self.effects.get('gene', None)
         self.aa_change = self.effects.get('amino_acid_change', None)
-        self.consequences = self.effects[self.keys[0]].split('&')
+        self.consequence_key = self.keys[0]
 
     def unused(self, used=frozenset("csq|gene|transcript|biotype|strand|aa_change|dna_change".lower().split("|"))):
         """Return fields that were in the VCF but weren't utilized as part of the standard fields supported here."""
         return [k for k in self.keys if not k.lower() in used]
-
-    @property
-    def exonic(self):
-        return self.biotype == "protein_coding" and any(csq in EXONIC_IMPACTS for csq in self.consequences)
-
-    @property
-    def coding(self):
-        # what about start/stop_gained?
-        return self.exonic and any(csq[1:] != "_prime_utr" for csq in self.consequences)
 
 
 class VEP(Effect):
@@ -532,38 +557,21 @@ class VEP(Effect):
             assert not "," in effect_string
             assert not "=" in effect_string
         self.effect_string = effect_string
-        if keys is not None: self.keys = keys
-
-        self.effect_string = effect_string
+        if keys is not None:
+            self.keys = keys
         self.effects = dict(izip(self.keys, (x.strip() for x in effect_string.split("|"))))
         self.biotype = self.effects.get('BIOTYPE', None)
         self.prioritize_canonical = prioritize_canonical
-
-    @property
-    def consequences(self, _cache={}):
-        try:
-            # this is a bottleneck so we keep a cache
-            return _cache[self.effects['Consequence']]
-        except KeyError:
-            res = _cache[self.effects['Consequence']] = list(it.chain.from_iterable(x.split("+") for x in self.effects['Consequence'].split('&')))
-            return res
+        self.consequence_key = 'Consequence'
 
     def unused(self, used=frozenset("Consequence|Codons|Amino_acids|Gene|SYMBOL|Feature|EXON|PolyPhen|SIFT|Protein_position|BIOTYPE|CANONICAL".lower().split("|"))):
         """Return fields that were in the VCF but weren't utilized as part of the standard fields supported here."""
         return [k for k in self.keys if not k.lower() in used]
 
     @property
-    def coding(self):
-        # what about start/stop_gained?
-        return self.exonic and any(csq[1:] != "_prime_UTR_variant" for csq in self.consequences)
-
-    @property
-    def exonic(self):
-        return self.biotype == "protein_coding" and any(csq in EXONIC_IMPACTS for csq in self.consequences)
-
-    @property
     def is_canonical(self):
         return self.effects.get("CANONICAL", "") != "" 
+
 
 class SnpEff(Effect):
     lookup = snpeff_lookup
@@ -580,23 +588,7 @@ class SnpEff(Effect):
             self.keys = keys
         self.effects = dict(izip(self.keys, (x.strip() for x in effect_string.split("|", len(self.keys)))))
         self.biotype = self.effects['Transcript_BioType']
-
-    @property
-    def consequences(self):
-        return list(it.chain.from_iterable(x.split("+") for x in self.effects['Annotation'].split('&')))
-
-    @property
-    def coding(self):
-        # TODO: check start_gained and utr
-        return self.exonic and not "utr" in self.consequence and not "start_gained" in self.consequence
-
-
-    @property
-    def exonic(self):
-        csqs = self.consequence
-        if isinstance(csqs, basestring):
-            csqs = [csqs]
-        return any(csq in EXONIC_IMPACTS for csq in csqs) and self.effects['Transcript_BioType'] == 'protein_coding'
+        self.consequence_key = self.keys[1]
 
 
 class OldSnpEff(SnpEff):
@@ -612,20 +604,20 @@ class OldSnpEff(SnpEff):
         if keys is not None:
             self.keys = keys
         self.effects = dict(izip(self.keys, (x.strip() for x in _patt.split(effect_string))))
+        self.biotype = self.effects[self.keys[7]]
+        self.consequence_key = self.keys[0]
 
-    @property
-    def consequence(self):
-        if '&' in self.effects['Effect']:
-            return self.effects['Effect'].split('&')
-        return self.effects['Effect']
-
-    @property
-    def consequences(self):
-        try:
-            return [old_snpeff_effect_so.get(c, old_snpeff_effect_so[c.upper()]) for c in it.chain.from_iterable(x.split("+") for x in
-                self.effects['Effect'].split('&'))]
-        except KeyError:
-            return list(it.chain.from_iterable(x.split("+") for x in self.effects['Effect'].split('&')))
+    def parse_consequences(self, csq_string):
+        csqs = it.chain.from_iterable(
+            x.split("+") for x in csq_string.split('&')
+        )
+        return list(
+            old_snpeff_effect_so.get(
+                c, old_snpeff_effect_so.get(
+                    c.upper(), c
+                )
+            ) for c in csqs
+        )
 
     @property
     def severity(self, lookup={'HIGH': 3, 'MED': 2, 'LOW': 1}):
@@ -635,11 +627,30 @@ class OldSnpEff(SnpEff):
         except KeyError:
             try:
                 #in between
-                sevs = [IMPACT_SEVERITY.get(csq, "LOW") for csq in self.consequences]
-                return max(lookup[s] for s in sevs)
+                return max(lookup[IMPACT_SEVERITY.get(csq, "LOW")] for csq in self.consequences)
             except KeyError:
                 return Effect.severity.fget(self)
 
     @property
-    def is_lof(self):
-        return self.biotype == "protein_coding" and self.impact_severity == "HIGH"
+    def is_exonic(self):
+        return old_snpeff_effect_so.get(self.top_consequence, self.top_consequence) in EXONIC_IMPACTS
+
+    @property
+    def is_coding(self):
+        return self.biotype == "protein_coding" and old_snpeff_effect_so.get(self.top_consequence, self.top_consequence) in CODING_IMPACTS
+
+    @property
+    def is_splicing(self):
+        return "splice" in old_snpeff_effect_so.get(self.top_consequence, self.top_consequence)
+
+    @property
+    def exonic(self):
+        return any(old_snpeff_effect_so.get(csq, csq) in EXONIC_IMPACTS for csq in self.consequences)
+
+    @property
+    def coding(self):
+        return self.biotype == "protein_coding" and any(old_snpeff_effect_so.get(csq, csq) in CODING_IMPACTS for csq in self.consequences)
+
+    @property
+    def splicing(self):
+        return any("splice" in old_snpeff_effect_so.get(csq, csq) for csq in self.consequences)
