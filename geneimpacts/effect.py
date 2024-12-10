@@ -603,7 +603,7 @@ class OldSnpEff(SnpEff):
 
     keys = [x.strip() for x in "Effect | Effect_Impact | Functional_Class | Codon_Change | Amino_Acid_change| Amino_Acid_length | Gene_Name | Gene_BioType | Coding | Transcript | Exon  | ERRORS | WARNINGS".split("|")]
 
-    def __init__(self, effect_string, keys=None, _patt=re.compile("\||\("),
+    def __init__(self, effect_string, keys=None, _patt=re.compile(r"\||\("),
                  prioritize_canonical=False):
         assert not "," in effect_string
         assert not "=" in effect_string
