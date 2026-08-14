@@ -151,6 +151,7 @@ IMPACT_SEVERITY = [
     ('gene_variant', 'LOW'), # snpEff
     ('NMD_transcript_variant', 'LOW'), # VEP
     ('non_coding_transcript_variant', 'LOW'), # VEP
+    ('coding_transcript_variant', 'LOW'), # VEP
     ('upstream_gene_variant', 'LOW'), # VEP
     ('downstream_gene_variant', 'LOW'), # VEP
     ('TFBS_ablation', 'LOW'), # VEP
@@ -158,6 +159,7 @@ IMPACT_SEVERITY = [
     ('TF_binding_site_variant', 'LOW'), # VEP
     ('regulatory_region_amplification', 'LOW'), # VEP
     ('feature_elongation', 'LOW'), # VEP
+    ('sequence_variant', 'LOW'), # VEP
     ('miRNA', 'LOW'), # snpEff
     ('transcript_variant', 'LOW'), # snpEff
     ('start_retained', 'LOW'), # snpEff
